@@ -1,0 +1,53 @@
+.header {
+  text-align: center;
+}
+
+/* Left panel */
+.upload-panel {
+  font-size: 75%;
+  width: 300px;
+  height: 100vh;
+  padding: 1em;
+  padding-right: 1em;
+  overflow: scroll;
+  overflow-x: scroll;
+}
+
+/* Right panel */
+.explain-panel {
+  font-size: 75%;
+  width: 300px;
+  height: 100vh;
+  padding: 1em;
+  padding-right: 1em;
+  overflow: scroll;
+  overflow-x: scroll;
+}
+
+
+body {
+  margin: 0px;
+  overflow: visible
+}
+
+.lyr0
+{
+    
+    position: fixed; 
+    left: 0; 
+    top: 0; 
+    width:1200;
+    height: 700;
+    z-index: 0;
+}
+
+.lyr1
+{
+    
+    position: fixed; 
+    left: 0; 
+    top: 0; 
+    width:1200;
+    height: 700;
+    z-index: 1;
+}
