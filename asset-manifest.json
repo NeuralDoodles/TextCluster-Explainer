@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/TextCluster-Explainer/static/css/main.1678fb42.css",
-    "main.js": "/TextCluster-Explainer/static/js/main.12e12e8d.js",
+    "main.js": "/TextCluster-Explainer/static/js/main.4ef2b02f.js",
     "index.html": "/TextCluster-Explainer/index.html",
     "main.1678fb42.css.map": "/TextCluster-Explainer/static/css/main.1678fb42.css.map",
-    "main.12e12e8d.js.map": "/TextCluster-Explainer/static/js/main.12e12e8d.js.map"
+    "main.4ef2b02f.js.map": "/TextCluster-Explainer/static/js/main.4ef2b02f.js.map"
   },
   "entrypoints": [
     "static/css/main.1678fb42.css",
-    "static/js/main.12e12e8d.js"
+    "static/js/main.4ef2b02f.js"
   ]
 }
