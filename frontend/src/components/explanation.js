@@ -11,7 +11,29 @@ import Slider from "@mui/material/Slider";
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
-const localDevURL = "http://127.0.0.1:8000/";
+
+function addlabel(label, center){
+  var canvas = document.getElementById('labels')
+  var context = canvas.getContext('2d');
+  context.font = "15px Georgia";
+  let w = context.measureText(label).width;
+  context.fillText(label, center[0]-w/2,center[1]-10);
+}
+
+
+  // Gets centroid of set of points
+  function getCentroid(arr) {
+
+    
+   
+    var x = arr.map (xy => xy[0]);
+    var y = arr.map (xy => xy[1]);
+    var cx = (Math.min (...x) + Math.max (...x)) / 2;
+    var cy = (Math.min (...y) + Math.max (...y)) / 2;
+    console.log(arr,cx,cy)
+    return [cx, cy];
+
+  }
 
 function clearSelectedMatchingPoints() {
   }
@@ -101,6 +123,8 @@ const toggleExpDiv = (e, id, txt) => {
  function Explain(data) {
     var selectedtext = []
     const appcontext = useContext(AppContext);
+    const localDevURL = appcontext.localDevURL;
+
 
 
     
@@ -344,8 +368,12 @@ const handleTextClick = (e) => {
           selectedtext: JSON.stringify([appcontext.prompt, ...selectedtext]),
         })
         .then((response) => {
-          console.log(response)
+          console.log(response, getCentroid(appcontext.lassoed))
           appcontext.setLangexplanation(response.data);
+          var centroid = getCentroid(appcontext.lassoed)
+          addlabel(response.statusText, centroid)
+          
+
         })
         .catch((error) => {
           console.log(error);

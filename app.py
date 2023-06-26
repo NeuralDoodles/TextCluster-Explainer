@@ -1,4 +1,3 @@
-from multiprocessing import reduction
 from flask import Flask, send_from_directory, url_for
 from flask_cors import CORS #comment this on deployment
 from flask_restful import reqparse
@@ -70,7 +69,7 @@ def generate():
     for s in text:
         sent = nltk.sent_tokenize(s)
         for i in sent:
-            if len(i)>50:
+            if len(i)>10:
                 text = re.sub( '\n', ' ', i)
                 sentences.append(i)
     
@@ -203,14 +202,15 @@ def color_by_cluster_threshold(): #pass json file from front to back and then co
         
         wordlist = ", ".join(r.get_ranked_phrases()[:10])
         df_dr.loc[cluster_pts, 'keywords'] =  wordlist
+        
         '''
+        text = " ".join(sentences).split()[:3500]
+        openai.api_key = "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" #args['apiKey']
 
-        text = " ".join(sentences).split()[:5000]
-
-        openai.api_key =""
+        #openai.api_key =""
         completion = openai.ChatCompletion.create(
-        #model="gpt-3.5-turbo", 
-        model="gpt-4", 
+        model="gpt-3.5-turbo", 
+        #model="gpt-4", 
         messages=[{"role": "user", "content": "Please respond with a Keyword or Phrase that best captures the common theme between the following sentences. Make sure your response is only one word or a phrase:" +" ".join(text) }]
         )
         reply_content = completion.choices[0].message.content
@@ -279,21 +279,31 @@ def GPTexplanation():
     parser.add_argument('apiKey', type=str)
     args = parser.parse_args()
     selectedtext = args['selectedtext']
-    openai.api_key = args['apiKey']
+    openai.api_key = "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" #args['apiKey']
     
 
-    text = " ".join(selectedtext).split()[:7900]
+    text = " ".join(selectedtext).split()[:3900]
     #"Please respond with a Keyord or Phrase that best captures the common theme between the following sentences. Make sure your response is only a word or a phrase:"
     completion = openai.ChatCompletion.create(
-        #model="gpt-3.5-turbo", 
-        model="gpt-4", 
+        model="gpt-3.5-turbo", 
+        #model="gpt-4", 
         messages=[{"role": "user", "content": "Do not complete the sentences. Answer the following question: " +" ".join(text) }]
         )
     reply_content = completion.choices[0].message.content
+
+    
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo", 
+        #model="gpt-4", 
+        messages=[{"role": "user", "content": "I am providing a list of papers from the Conference on Human Factors in Computing Systems. Please respond with a label that best captures the common theme between the papers. Make sure your response is only one word or a phrase and is concise:" +" ".join(text) }]
+        )
+    label = completion.choices[0].message.content
+    
+
     # note the use of the "assistant" role here. This is because we're feeding the model's response into context.
-    chat_history.append({"role": "assistant", "content": f"{reply_content}"})
-    print(reply_content)
-    return reply_content
+    #chat_history.append({"role": "assistant", "content": f"{reply_content}"})
+    print(reply_content, label)
+    return reply_content, label
 
 
 @app.route("/test-projection", methods=["POST"])

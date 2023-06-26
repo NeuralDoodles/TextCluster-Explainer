@@ -1,8 +1,10 @@
 {
   "name": "frontend",
   "version": "0.1.0",
-  "private": true,
+  "homepage": "https://neuraldoodles.github.io/TextCluster-Explainer",
+  "private": false,
   "dependencies": {
+    "gh-pages": "^2.0.1",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@fil/lasso-selection-canvas": "https://api.observablehq.com/@fil/lasso-selection-canvas.tgz?v=3",
@@ -16,6 +18,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.4.0",
     "bootstrap": "^5.3.0-alpha3",
     "d3": "^7.8.4",
     "d3-cloud": "^1.2.5",
@@ -36,6 +39,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

@@ -66,7 +66,7 @@ export default function RightDrawer() {
         open={open}
       >
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton id="explainnavbutton" onClick={handleDrawerClose}>
             {theme.direction === "rtl" ? (
               <ChevronLeftIcon />
             ) : (

@@ -1,16 +1,20 @@
 .header {
   text-align: center;
 }
-
+/* override bootstrap navbar colors */
+.navbar,
+.navbar-default {
+    background-image: linear-gradient(to bottom,#ebebeb 0,#dcdada 100%) !important; /* override background image gradient w/ flat color */
+}
 /* Left panel */
 .upload-panel {
   font-size: 75%;
-  width: 300px;
+  width: 320px;
   height: 100vh;
   padding: 1em;
   padding-right: 1em;
-  overflow: scroll;
-  overflow-x: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 /* Right panel */
@@ -24,6 +28,16 @@
   overflow-x: scroll;
 }
 
+/* Right panel */
+.explore-panel {
+  font-size: 75%;
+  width: 300px;
+  height: 100vh;
+  padding: 1em;
+  padding-right: 1em;
+  overflow: scroll;
+  overflow-x: scroll;
+}
 
 body {
   margin: 0px;
@@ -41,6 +55,8 @@ body {
     z-index: 0;
 }
 
+
+
 .lyr1
 {
     
@@ -50,4 +66,28 @@ body {
     width:1200;
     height: 700;
     z-index: 1;
+}
+
+.lyr2
+{
+    
+    position: fixed; 
+    left: 0; 
+    top: 0; 
+    width:1200;
+    height: 700;
+    z-index: 2;
+}
+
+.cluster-slider
+{
+    
+    position: fixed;
+    padding: 10px;
+
+    left: 100; 
+    top: 650; 
+    width:10%;
+    height: 10%;
+    z-index: 3;
 }

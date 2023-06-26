@@ -2,14 +2,63 @@ import React, {useRef, useContext, useEffect} from "react";
 import * as d3 from "d3";
 import { AppContext } from '../AppContext';
 import { quadtree } from 'd3-quadtree' // v^2.0.0
-import  Explain  from "./explanation";
+import Slider from "@mui/material/Slider";
+
+
 
 //datum:
 //0: x
 //1: y
 //2: label
 
+
+function drawPoint([cx,cy], r, ctx, color) {
+
+
+  // NOTE; each point needs to be drawn as its own path
+  // as every point needs its own stroke. you can get an insane
+  // speed up if the path is closed after all the points have been drawn
+  // and don't mind points not having a stroke
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  //context.closePath();
+  ctx.fillStyle = color
+  ctx.fill();
+  //context.stroke();
+}
+
+function makeCanvas(id, class_name, w, h){
+  var canvas = document.createElement('canvas');
+
+  canvas.setAttribute('className',class_name)
+  canvas.setAttribute('id',id)
+  canvas.style.position = 'absolute';
+  canvas.style.overflow = "visible"
+  
+  canvas.style.x = 10;
+  canvas.style.y = 10;
+  const context = canvas.getContext("2d");
+
+
+  context.canvas.width  = w;
+  context.canvas.height = h;
+  document.body.appendChild(canvas);
+
+  return canvas, context
+
+
+}
 var isinsidelasso = []
+let isDragging = false
+let isZooming = false
+
+let dragStart = { x: 0, y: 0 }
+let cameraOffset = { x: 0, y: 0 }
+let MAX_ZOOM = 200
+let MIN_ZOOM = 0.0005
+let SCROLL_SENSITIVITY = 0.001
+let DRAG_SENSITIVITY = 0.1
+ makeCanvas('labels', 'lyr2', 2000, 800)
 
 function trackPointer(e, { start, move, out, end }) {
     const tracker = {},
@@ -43,11 +92,54 @@ function trackPointer(e, { start, move, out, end }) {
     start && start(tracker);
   }
 
+  // Gets the relevant location from a mouse or single touch event
+  function getEventLocation(e) {
+      if (e.touches && e.touches.length == 1)
+      {
+          return { x:e.touches[0].clientX, y: e.touches[0].clientY }
+      }
+      else if (e.clientX && e.clientY)
+      {
+          return { x: e.clientX, y: e.clientY }
+      }
+  }
+  
+  
+  
+  
+  
 
 function LassoSelectionCanvas(data) {
     const appcontext = useContext(AppContext);
 
+    let cameraZoom = appcontext.zoomscale
 
+
+    function adjustZoom(zoomAmount, zoomFactor) {
+        if (!isDragging)
+        {
+            if (zoomAmount)
+            {
+                cameraZoom += zoomAmount
+                appcontext.setZoomscale(cameraZoom)
+            }
+            else if (zoomFactor)
+            {
+                console.log(zoomFactor)
+                cameraZoom = zoomFactor*lastZoom
+                appcontext.setZoomscale(cameraZoom)
+            }
+    
+            cameraZoom = Math.min( cameraZoom, MAX_ZOOM )
+            cameraZoom = Math.max( cameraZoom, MIN_ZOOM )
+            appcontext.setZoomscale(cameraZoom)
+    
+            //w = w+(zoomAmount)*300
+    
+    
+        }
+    
+    }  
 
     function lasso() {
         const dispatch = d3.dispatch("start", "lasso", "end");
@@ -57,34 +149,73 @@ function LassoSelectionCanvas(data) {
           
       
           selection
+            /*.on('wheel', e => {
+              isZooming = true
+              console.log("zoom")
+              if (isZooming){
+                adjustZoom(e.deltaY*SCROLL_SENSITIVITY)
+              }}) */
             .on("touchmove", e => e.preventDefault()) // prevent scrolling
+            .on("touchdown", e => e.preventDefault()) // prevent scrolling
+            .on("touchmove", e => e.preventDefault()) // prevent scrolling
+            .on("touchup", e => e.preventDefault()) // prevent scrolling
+            /*.on("mousedown", e => {
+              if (e.shiftKey){
+                isDragging = true
+                dragStart.x = getEventLocation(e).x - cameraOffset.x
+                dragStart.y = getEventLocation(e).y- cameraOffset.y
+                console.log(dragStart)
+              }
+            }) // prevent scrolling
+            .on("mouseup", e => isDragging = false) // prevent scrolling
+            .on("mousemove", e => {
+              if (isDragging)
+    
+              {
+                cameraOffset.x = (getEventLocation(e).x - dragStart.x)
+                cameraOffset.y = (getEventLocation(e).y- dragStart.y)
+                appcontext.setCameraOffset(cameraOffset)
+                console.log(appcontext.cameraOffset,  dragStart)
+              }
+            })*/
             .on("pointerdown", e => {
               trackPointer(e, {
                 start: p => {
                   polygon.length = 0;
-                  dispatch.call("start", node, polygon);
+                  isZooming = false
                   
+                    isDragging = false
+                    appcontext.setZoomselected(false)
+                    dispatch.call("start", node, polygon);
                   
                   
                   
                 },
                 move: p => {
+                  isZooming = false
+
+                
                   polygon.push(p.point);
                   dispatch.call("lasso", node, polygon);
+                
                 },
                 end: p => {
-                  dispatch.call("end", node, polygon);
-                  const canvas = document.querySelector('canvas');
-
-                  console.log(canvas.value)
+                  isZooming = false
 
                   
+                    dispatch.call("end", node, polygon);
+                    appcontext.prevlasso.push(polygon)
+                    
+                  
+
+                  const canvas = document.getElementById('scatterplot');
                   
                   if (canvas.value['polygon'].length>1){
                     appcontext.setLassoed(canvas.value['selected']);
                     appcontext.setGetexplain(true); 
                     appcontext.setIsinsidelasso(isinsidelasso)};
-                    appcontext.setPrevselected(canvas.value['selected'])
+                    appcontext.prevselected.push(canvas.value['selected'])
+                    appcontext.setLastselected(canvas.value['selected'])
                   
                   
 
@@ -125,33 +256,29 @@ function LassoSelectionCanvas(data) {
 function maketooltip(data, width, height){
 
   //console.log(document.getElementById('scatterplot'),  document.getElementById('tooltip'))
-
-  var canvas = document.createElement('canvas');
-
-  canvas.setAttribute('className','lyr1')
-  canvas.setAttribute('id','tooltip')
-  canvas.style.position = 'absolute';
-  canvas.style.overflow = "visible"
-  
-  canvas.style.x = 10;
-  canvas.style.y = 10;
-  const context = canvas.getContext("2d");
+ 
+  const canvas = document.getElementById('scatterplot');
+  let transf_matrix = canvas.getContext('2d').getTransform();
+  const transformedPoint = (point, matrix) => {
+    let x =  matrix.a * point[0] + matrix.c * point[1] + matrix.e
+    let y = matrix.b * point[1]+ matrix.d * point[1] + matrix.f
+    return [x,y, point[2]]
+  };
 
 
-  context.canvas.width  = width;
-  context.canvas.height = height;
-  document.body.appendChild(canvas);
 
-
+let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
 
   const quadtreeInstance =  quadtree()//here 500 is the width and height of the canvas or the max x/y range of the points in scatter chart.
   .x(function(d) {return +d[0]})
-  .y(function(d) {return +d[1]}).addAll(data)
+  .y(function(d) {return +d[1]}).addAll(transformed_data)
  
   d3.select("#tooltip").on("mousemove", function(event){
       
       //find in the vicinity of 10 pixel around the click.
       const newHoverPoint = quadtreeInstance.find(event.pageX,  event.pageY-navbarheight+20, 10)
+
+      
 
 
       const canvas2 = document.getElementById('tooltip');
@@ -172,7 +299,7 @@ function maketooltip(data, width, height){
           let txt = newHoverPoint[2]
           var w = ctx.measureText(txt).width;
 
-
+          let point = transformedPoint(newHoverPoint, transf_matrix)
           // rectangle
           ctx.beginPath();
           ctx.lineWidth = "2";
@@ -183,7 +310,7 @@ function maketooltip(data, width, height){
           ctx.stroke();
           
           ctx.beginPath();
-          ctx.arc(newHoverPoint[0],  newHoverPoint[1], 5, 0, 2 * Math.PI);
+          ctx.arc(newHoverPoint[0], newHoverPoint[1], 5, 0, 2 * Math.PI);
           ctx.stroke()      
           ctx.fillStyle = 'green';
           ctx.fill();
@@ -230,34 +357,32 @@ function maketooltip(data, width, height){
     appcontext.yscale = y
     
 
-    data = data.map((d) => [x(+d[0]), y(+d[1]),d[2]]);
+    data = data.map((d) => [x(+d[0]), y(+d[1]),d[2],d[3],d[4],d[5]]);
+
+
+    var canvas, context = makeCanvas('scatterplot', 'lyr0', scatterplotwidth+pad, scatterplotheight+pad)
 
 
 
-
-
-  var canvas = document.createElement('canvas');
-  
-  canvas.setAttribute('className','lyr0')
-  canvas.setAttribute('id','scatterplot')
-  canvas.style.position = 'absolute';
-  canvas.style.x = 10;
-  canvas.style.y = 10;
-  const context = canvas.getContext("2d");
-  
-
-  context.canvas.width  = scatterplotwidth+pad;
-  context.canvas.height = scatterplotheight+pad;
-  
-  document.body.appendChild(canvas);
 
 
   const path = d3.geoPath().context(context);
 
   function draw(polygon) {
     
-    
     context.clearRect(0, 0, scatterplotwidth, scatterplotheight);
+    context.clearRect(-30, -30, window.innerWidth+50, window.innerHeight+50);
+    // Translate to the canvas centre before zooming - so you'll always zoom on what you're looking directly at
+    
+                  
+
+      context.translate( scatterplotwidth / 2, scatterplotheight / 2 )
+      context.scale(cameraZoom, cameraZoom)
+      context.translate( -scatterplotwidth / 2 + cameraOffset.x, -scatterplotheight / 2 + cameraOffset.y )
+
+    
+    
+
 
     context.beginPath();
     path({
@@ -266,9 +391,24 @@ function maketooltip(data, width, height){
     });
     context.fillStyle = "rgba(0,0,0,.1)";
     context.fill("evenodd");
-    context.lineWidth = 1.5;
+    context.lineWidth = 2;
     context.stroke();
 
+
+    appcontext.prevlasso.forEach(element => {
+      context.beginPath();
+    path({
+      type: "LineString",
+      coordinates: element
+    });
+    context.fillStyle = "rgba(0,0,0,.1)";
+    context.fill("evenodd");
+    context.lineWidth = 0.5;
+    context.stroke();
+
+      
+    });
+    
     const selected = [];
 
     isinsidelasso = []
@@ -282,24 +422,50 @@ function maketooltip(data, width, height){
     }
     
 
-    context.beginPath();
+    /*context.beginPath();
     path.pointRadius(2)({ type: "MultiPoint", coordinates: data });
-    context.fillStyle = "#000";
-    context.globalAlpha = 0.7
+    context.fillStyle = "rgba(0, 0, 0, 0.8)";
     context.fill();
-
+    
     context.beginPath();
     path.pointRadius(2)({ type: "MultiPoint", coordinates: appcontext.prevselected });
     context.fillStyle = "steelblue";
     context.globalAlpha = 0.7
     context.fill();
+    */
+
+
+    data.forEach(function(point, index) {
+      if  (appcontext.clusterk>1) {
+        console.log(point)
+        drawPoint([point[0],point[1]], 2, context, appcontext.clustercolors[point[3]]);
+      }else{
+        drawPoint([point[0],point[1]], 2, context, "rgba(0 ,0, 0 ,0.5)");
+      }
+      
+    })
+
+    console.log(appcontext.prevselected)
+    appcontext.prevselected.forEach(function(points, index) {
+      
+      points.forEach(function(point) {
+      drawPoint([point[0],point[1]], 3, context,appcontext.clustercolors[index]);
+    })})
+    context.closePath()
+
+    
 
     if (polygon.length > 2) {
-      context.beginPath();
+      /*context.beginPath();
       path.pointRadius(3.5)({ type: "MultiPoint", coordinates: selected });
       context.fillStyle = "steelblue";
-      context.globalAlpha = 1
-      context.fill();
+      context.globalAlpha = 0.7
+      context.fill();*/
+
+      selected.forEach(function(point, index) {
+        drawPoint([point[0],point[1]], 4, context, "rgba(3,93,96,0.8)");
+      })
+      context.closePath()
       
     }
     //console.log(selected)
@@ -310,49 +476,80 @@ function maketooltip(data, width, height){
     var found = [];
     var color = 'black';
 
+    maketooltip(data, scatterplotwidth, scatterplotheight)
 
 
 
       
       //context = d3.select("canvas").node().getContext("2d");
-     
+  
      
     
   }
 
-  const defaultLasso = [
-    [366, 143],
-    [351, 135],
-    [337, 132],
-    [318, 130],
-    [294, 129],
-    [268, 132],
-    [247, 141],
-    [227, 159],
-    [209, 184],
-    [197, 214],
-    [192, 248],
-    [192, 281],
-    [201, 310],
-    [219, 331],
-    [263, 343],
-    [315, 339],
-    [370, 321],
-    [393, 298]
-  ]
+
+
+  let lastZoom = cameraZoom
+ 
+
+  makeCanvas('tooltip', 'lyr1', 2*scatterplotwidth, scatterplotheight)
+  var canvas = document.getElementById('tooltip')
+  //canvas.addEventListener( 'wheel', (e) => adjustZoom(e.deltaY*SCROLL_SENSITIVITY))
+  /*canvas.addEventListener('mousedown', onPointerDown)
+  canvas.addEventListener('mouseup', onPointerUp)
+  canvas.addEventListener('mousemove', onPointerMove)*/
   draw([[0,0]]);
-  maketooltip(data, scatterplotwidth, scatterplotheight)
+  
 
   var cElements = document.getElementsByTagName('canvas');
 
   //console.log(cElements)
 
   const canvas2 = document.getElementById('tooltip');
-        
- const ctx = canvas2.getContext('2d');
-  d3.select(ctx.canvas)
-    .call(lasso().on("start lasso end", draw))
 
+
+function adjustZoom(zoomAmount, zoomFactor) {
+  console.log(isDragging)
+    if (!isDragging)
+    {
+        if (zoomAmount)
+        {
+            cameraZoom += zoomAmount
+            appcontext.setZoomscale(cameraZoom)
+        }
+        else if (zoomFactor)
+        {
+            console.log(zoomFactor)
+            cameraZoom = zoomFactor*lastZoom
+            appcontext.setZoomscale(cameraZoom)
+        }
+
+        cameraZoom = Math.min( cameraZoom, MAX_ZOOM )
+        cameraZoom = Math.max( cameraZoom, MIN_ZOOM )
+        appcontext.setZoomscale(cameraZoom)
+
+        console.log(zoomAmount,cameraZoom)
+        //w = w+(zoomAmount)*300
+
+
+    }
+
+}
+requestAnimationFrame( draw )
+const ctx = canvas2.getContext('2d');
+if (appcontext.zoomselected){
+  //ctx.canvas.addEventListener( 'wheel', (e) => adjustZoom(e.deltaY*SCROLL_SENSITIVITY))
+}else{
+  ctx.canvas.removeEventListener('wheel', adjustZoom);
+}
+//
+        
+ //const ctx = canvas2.getContext('2d');
+ d3.select(ctx.canvas)
+   .call(lasso().on("start lasso end", draw))
+
+
+  
 
 
 return (
@@ -364,4 +561,4 @@ return (
 
 
 
-export default LassoSelectionCanvas;
+export default LassoSelectionCanvas;  

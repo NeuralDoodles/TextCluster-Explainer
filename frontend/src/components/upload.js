@@ -3,6 +3,12 @@ import "../App.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import ToggleButton from '@mui/material/ToggleButton';
+import CheckIcon from '@mui/icons-material/Check';
+
+
 
 import Slider from "@mui/material/Slider";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -31,17 +37,10 @@ import { AppContext } from '../AppContext';
 
 library.add(faCheckSquare, faSquare);
 
-const localDevURL = "http://127.0.0.1:8000/";
+
 let width = window.innerWidth ;
 let height = window.innerHeight - 50;
 
-const LoadDataCircle = ({ loadingData }) => {
-  if (!loadingData) {
-    return <div></div>;
-  } else {
-    return <CircularProgress />;
-  }
-};
 
 
 const ReductionOptions = ({
@@ -107,7 +106,9 @@ const KeyItem = ({ props }) => {
 // Data upload + control panel
 export const Upload = () => {
 
-    const context = useContext(AppContext);
+    const appcontext = useContext(AppContext);
+
+    const localDevURL = appcontext.localDevURL;
     
 
     const fileReader = new FileReader();
@@ -116,14 +117,13 @@ export const Upload = () => {
 
   // Set raw file on raw file upload
   const handleRawFileChange = (e) => { 
-    context.setRawFile(e.target.files[0]);
+    appcontext.setRawFile(e.target.files[0]);
 
     // Uses first row from CSV to create dropdown of column names
     let rows;
     fileReader.onload = function (event) {
-      context.setCsvOutput(event.target.result);
-      console.log(context.csvOutput)
-
+      appcontext.setCsvOutput(event.target.result);
+      
 
       rows = event.target.result.split("\n");
 
@@ -145,8 +145,8 @@ export const Upload = () => {
           </option>
         );
       }
-      context.setCsvColumns(colItems);
-      context.setColorCol("none");
+      appcontext.setCsvColumns(colItems);
+      appcontext.setColorCol("none");
     };
 
     fileReader.readAsText(e.target.files[0]);
@@ -154,7 +154,7 @@ export const Upload = () => {
 
   const handleRawTxtFileChange = (e) => { 
     fileReader.onload = function (event) {
-      context.setTxtFile(event.target.result)
+      appcontext.setTxtFile(event.target.result)
     };
     fileReader.readAsText(e.target.files[0]);
     
@@ -163,9 +163,10 @@ export const Upload = () => {
 
     const handleTxtToEmb = (e) => { 
       let req = {
-        text: context.txtFile,
-        n: context.txtN
+        text: appcontext.txtFile,
+        n: appcontext.txtN
       };
+      document.getElementById("progress_embed").style.display="block"
       axios //sending data to the backend
       .post(localDevURL + "generate-embeddings", req)
       .then((response) => {
@@ -191,6 +192,8 @@ export const Upload = () => {
           link.href = csvContent;
           link.download = "embeddings.csv";
           link.click();
+          document.getElementById("progress_embed").style.display="none"
+
 
 
 
@@ -224,7 +227,7 @@ export const Upload = () => {
   const handleProjectedFileChange = (e) => {
       fileReader.onload = function (event) {
         console.log(JSON.parse(event.target.result))
-        context.setPlottedData(JSON.parse(event.target.result));
+        appcontext.setPlottedData(JSON.parse(event.target.result));
         document.getElementById("uploadnavbutton").click();
         let req = {
           data: JSON.stringify(event.target.result),
@@ -246,15 +249,15 @@ export const Upload = () => {
     };
 
   const handleColChange = (e) => {
-    context.SetselectedCol(e.target.value);
+    appcontext.SetselectedCol(e.target.value);
   };
 
   const handleChangeTxtN = (e) => {
-    context.setTxtN(e.target.value);
+    appcontext.setTxtN(e.target.value);
   };
 
   const handleReductionMethodChange = (e) => {
-    context.setReductionMethod(e.target.value);
+    appcontext.setReductionMethod(e.target.value);
   };
 
    // Handle file projection
@@ -262,32 +265,34 @@ export const Upload = () => {
     e.preventDefault();
 
     // Submits post request if there is not a request already being processed
-    if (context.rawFile && !context.loadingData && context.reductionMethod !== "none") {
+    if (appcontext.rawFile && !appcontext.loadingData && appcontext.reductionMethod !== "none") {
 
       let req = {
-        data: context.csvOutput,
-        reductionMethod: context.reductionMethod,
-        selectedCol: context.ColorCol
+        data: appcontext.csvOutput,
+        reductionMethod: appcontext.reductionMethod,
+        selectedCol: appcontext.ColorCol
       };
 
       // Constructing request based on reduction Method
-      if (context.reductionMethod === "TSNE") {
-        req.perplexity = context.perplexity;
+      if (appcontext.reductionMethod === "TSNE") {
+        req.perplexity = appcontext.perplexity;
       }
-
+      document.getElementById("progress_project").style.display="block"
       axios //sending data to the backend
         .post(localDevURL + "upload-data", req)
         .then((response) => {
           //console.log("SUCCESS", response.data.data);
-          context.setPlottedData(response.data.data)
+          appcontext.setPlottedData(response.data.data)
           document.getElementById("uploadnavbutton").click();
+          document.getElementById("progress_project").style.display="none"
+          appcontext.setDataset('')
         })
         .catch((error) => {
           console.log(error);
         });
-    } else if (!context.rawFile) {
+    } else if (!appcontext.rawFile) {
       alert("please upload a file");
-    } else if (context.reductionMethod === "none") {
+    } else if (appcontext.reductionMethod === "none") {
       alert("please select a reduction method!");
       return;
     }
@@ -296,7 +301,7 @@ export const Upload = () => {
     // Handles save of currently projected data
   const handleProjectionSave = (e) => {
       const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
-        JSON.stringify(context.plottedData)
+        JSON.stringify(appcontext.plottedData)
       )}`;
       // console.log(plottedData);
       const link = document.createElement("a");
@@ -328,7 +333,7 @@ export const Upload = () => {
                 style={{width:60}}
                 size="sm"
                 type="number"
-                value={context.txtN}
+                value={appcontext.txtN}
                 onChange={handleChangeTxtN}
               />sentences</p>
 
@@ -344,7 +349,14 @@ export const Upload = () => {
                   }}
               >
                 Embed
-              </Button>
+               
+              </Button> 
+              <div id= "progress_embed" style={{position:'relative', left: 80,top:-105, display:"none"}}><CircularProgress />
+              <Box  style={{position:'relative', left: 0,top:-10}}>
+                <Typography variant="caption" component="div" color="text.secondary"> Loading</Typography>
+               </Box>
+               </div>  
+                
 
               </Form.Group>
         <hr/>
@@ -358,14 +370,7 @@ export const Upload = () => {
                 accept=".csv"
                 onChange={handleRawFileChange}
               />
-              <Form.Select
-                className="form-select input-sm"
-                size="sm"
-                aria-label="column-selection"
-                onChange={handleColChange}
-              >
-                {context.csvColumns}
-              </Form.Select>
+              
               <Form.Select
                 className="form-select input-sm"
                 size="sm"
@@ -387,9 +392,9 @@ export const Upload = () => {
         {/* TODO: add column selector*/}
         {/* Dimensionality reduction method selection */}
         <ReductionOptions
-          reductionMethod={context.reductionMethod}
-          perplexity={context.perplexity}
-          perplexityChanger={context.setPerplexity}
+          reductionMethod={appcontext.reductionMethod}
+          perplexity={appcontext.perplexity}
+          perplexityChanger={appcontext.setPerplexity}
             />
         <div className="submitButton">
               <Button
@@ -402,7 +407,12 @@ export const Upload = () => {
               >
                 Project
               </Button>
-              <LoadDataCircle loadingData={null} />
+              <div id= "progress_project" style={{position:'relative', left: 80,top:-35, display:"none"}}><CircularProgress />
+              <Box  style={{position:'relative', left: 0,top:-5}}>
+                <Typography variant="caption" component="div" color="text.secondary"> Loading</Typography>
+               </Box>
+               </div>  
+                
         </div>
         <hr />
         {/* Use previously cached projection */}
@@ -431,8 +441,9 @@ export const Upload = () => {
         </div>
       </div>
 
-      <LassoSelectionCanvas data = {context.plottedData}/>
-      
+      <LassoSelectionCanvas data = {appcontext.plottedData}/>
+
+
       </>
       
   );

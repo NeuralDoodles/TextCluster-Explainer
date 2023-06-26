@@ -12,13 +12,45 @@ export const AppContext = React.createContext(null);
 
 export const ContextWrapper = (props) => {
 
+  function generateColor (n) {
+
+    return Array.from({length: n}, () => '#' +  Math.random().toString(16).substr(-6));
+  }
+  
+
   function makedata(width,height)
   {
     const rngx = d3.randomNormal(width / 2, Math.min(width, height) / 5),
       rngy = d3.randomNormal(height / 2, Math.min(width, height) / 5);
-      let txt = "Hello";
-    return Array.from({ length: 1000 }, () => [rngx(), rngy(), txt]);
+      let txt = "Placeholder text";
+    return Array.from({ length: 100000 }, () => [rngx(), rngy(), txt]);
   }
+
+  // Gets centroid of set of points
+function getCentroid(points) {
+
+  var first = points[0],
+    last = points[points.length - 1];
+  if (first.x !== last.x || first.y !== last.y) points.push(first);
+  var twicearea = 0,
+    x = 0,
+    y = 0,
+    nPoints = points.length,
+    p1,
+    p2,
+    f;
+  for (var i = 0, j = nPoints - 1; i < nPoints; j = i++) {
+    p1 = points[i];
+    p2 = points[j];
+    f = p1.x * p2.y - p2.x * p1.y;
+    twicearea += f;
+    x += (p1.x + p2.x) * f;
+    y += (p1.y + p2.y) * f;
+  }
+  f = twicearea * 3;
+  console.log(points, x,y)
+  return { x: x / f, y: y / f };
+}
   const [dataset, setDataset] = useState('vispubs'); // File that hasn't been projected yet
   const [txtFile, setTxtFile] = useState(); 
   const [txtN, setTxtN] = useState(50); 
@@ -36,9 +68,23 @@ export const ContextWrapper = (props) => {
     //For making projections
     const [xscale,setXscale] = useState()
     const [yscale,setYscale] = useState()
+    const [zoomselected,setZoomselected] = useState(false)
+    const [zoomscale,setZoomscale] = useState(1)
+    const [cameraOffset,setCameraOffset] = useState({ x: 0, y: 0 })
     const [plottedData, setPlottedData] = useState(vispubs); // main variable for observable canvas
     const [prevselected, setPrevselected] = useState([])
+    const [lastselected, setLastselected] = useState([])
+    const [clusterk, setClusterk] = useState(1)
+
+
+    const [clustercolors, setClustercolors] = useState(generateColor(100))
+    const [autoclustercolors, setAutoclustercolors] = useState(generateColor(100))
+
+    
+
+    const [prevlasso, setPrevlasso] = useState([])
     const [lassoed, setLassoed] = useState([])
+    const [lassocentroid, setLassocentroid] = useState([])
     const [isinsidelasso, setIsinsidelasso] = useState([])
     const [getexplain, setGetexplain] = useState(false)
  
@@ -75,9 +121,18 @@ export const ContextWrapper = (props) => {
         perplexity, setPerplexity,
 
         //
+        zoomscale,setZoomscale,
+        zoomselected,setZoomselected,
+        cameraOffset,setCameraOffset,
         plottedData, setPlottedData,
         lassoed, setLassoed,
+        lassocentroid, setLassocentroid,
+        prevlasso, setPrevlasso,
         prevselected, setPrevselected,
+        lastselected, setLastselected,
+        clustercolors, setClustercolors,
+        autoclustercolors, setAutoclustercolors,
+        clusterk, setClusterk,
         xscale,setXscale,
         yscale,setYscale,
         //
