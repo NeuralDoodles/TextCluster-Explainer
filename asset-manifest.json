@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/TextCluster-Explainer/static/css/main.1678fb42.css",
+    "main.js": "/TextCluster-Explainer/static/js/main.d2c1070a.js",
+    "index.html": "/TextCluster-Explainer/index.html",
+    "main.1678fb42.css.map": "/TextCluster-Explainer/static/css/main.1678fb42.css.map",
+    "main.d2c1070a.js.map": "/TextCluster-Explainer/static/js/main.d2c1070a.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1678fb42.css",
+    "static/js/main.d2c1070a.js"
+  ]
+}
