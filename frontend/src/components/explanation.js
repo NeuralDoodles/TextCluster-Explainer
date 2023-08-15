@@ -2,7 +2,6 @@
 import axios from "axios";
 import { AppContext } from "../AppContext";
 import React, { useContext, useState, useEffect} from 'react';
-import { drawClouds } from "./phraseclouds";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -14,6 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 
 function addlabel(label, center){
   var canvas = document.getElementById('labels')
+  canvas.className = "lyr3";
   var context = canvas.getContext('2d');
   context.font = "15px Georgia";
   let w = context.measureText(label).width;
@@ -153,23 +153,6 @@ function drawTestProjection(point){
     
       }
     
-
-function handleChangetopknumber(e, newtopk){
-    appcontext.setTopknumber(newtopk)
-    axios
-        .post(localDevURL + "categorize-data", {
-          data: JSON.stringify(data.data),
-          k: newtopk,
-        })
-        .then((response) => {
-          console.log("Categorized!", response.data.data);
-          let newTopWords = drawClouds(response.data.data);
-          //context.setTopWords(newTopWords);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-  }
 
   const handleChangeText = (e) => {
     appcontext.setTesttext(e.target.value)
@@ -389,6 +372,7 @@ const handleTextClick = (e) => {
         
         <div id ="explain-div" className="explain-panel">
 
+
         <Button
         variant="light"
         id="menu-buttion-1"
@@ -419,24 +403,6 @@ const handleTextClick = (e) => {
 
       </Menu>
 
-
-      <div id="cloud-div">
-      
-        <div id="positive-cloud-div"style={{display:'none'}} >
-        <Slider
-            aria-label="Word Cloud number"
-            valueLabelDisplay="auto"
-            value={appcontext.topknumber}
-            onChange={handleChangetopknumber}
-            step={1}
-            marks
-            min={5}
-            max={50}
-          />
-          </div>
-
-        
-      </div>
 
       <div id="explain-test" style={{display:'block'}}>
 
@@ -507,34 +473,13 @@ const handleTextClick = (e) => {
       <Form.Control
             className="form-control"
             size="sm"
-            value={appcontext.apikey === "" ? "OpenAI API Key" : appcontext.apikey}
+            value={appcontext.apikey === "" ? "OpenAI API Key: *******" : appcontext.apikey}
             onChange={handleChangeKey}
           ></Form.Control>
         </div>
 
 
-      <div id="explore-selection" style={{display:"none"}}>
-
-<div id="unique-items-div">
-  <p className="title">
-    {selectedItems.length > 0
-      ? selectedItems.length + " total unique"
-      : 0}{" "}
-    items
-  </p>
-</div>
-<div className="tableDiv">
-  <Table bordered>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Item</th>
-      </tr>
-    </thead>
-    <tbody>{selectedItems}</tbody>
-  </Table>
-</div>
-</div>
+        
         </div>
 
     

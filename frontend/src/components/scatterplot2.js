@@ -12,7 +12,7 @@ import Slider from "@mui/material/Slider";
 //2: label
 
 
-function drawPoint([cx,cy], r, ctx, color) {
+function drawPoint([cx,cy], r, ctx, color, alpha = 0.6, lineWidth = 0.05) {
 
 
   // NOTE; each point needs to be drawn as its own path
@@ -22,8 +22,12 @@ function drawPoint([cx,cy], r, ctx, color) {
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, 2 * Math.PI);
   //context.closePath();
+  ctx.lineWidth = lineWidth;
+  ctx.strokeStyle = "black";
+  ctx.stroke();
   ctx.fillStyle = color
   ctx.fill();
+  ctx.globalAlpha = alpha
   //context.stroke();
 }
 
@@ -58,7 +62,14 @@ let MAX_ZOOM = 200
 let MIN_ZOOM = 0.0005
 let SCROLL_SENSITIVITY = 0.001
 let DRAG_SENSITIVITY = 0.1
- makeCanvas('labels', 'lyr2', 2000, 800)
+const leftpanelwidth = 300
+const navbarheight = 100
+const pad = 50
+
+let scatterplotwidth = window.innerWidth-leftpanelwidth -pad;
+let scatterplotheight = window.innerHeight-navbarheight -pad;
+
+ makeCanvas('labels', 'lyr2', scatterplotwidth+300, scatterplotheight)
 
 function trackPointer(e, { start, move, out, end }) {
     const tracker = {},
@@ -125,7 +136,7 @@ function LassoSelectionCanvas(data) {
             }
             else if (zoomFactor)
             {
-                console.log(zoomFactor)
+                //console.log(zoomFactor)
                 cameraZoom = zoomFactor*lastZoom
                 appcontext.setZoomscale(cameraZoom)
             }
@@ -214,6 +225,7 @@ function LassoSelectionCanvas(data) {
                     appcontext.setLassoed(canvas.value['selected']);
                     appcontext.setGetexplain(true); 
                     appcontext.setIsinsidelasso(isinsidelasso)};
+                    appcontext.setMakecloud(true)
                     appcontext.prevselected.push(canvas.value['selected'])
                     appcontext.setLastselected(canvas.value['selected'])
                   
@@ -245,12 +257,7 @@ function LassoSelectionCanvas(data) {
     
     data = data.data
 
-    const leftpanelwidth = 300
-    const navbarheight = 100
-    const pad = 50
 
-    let scatterplotwidth = window.innerWidth-leftpanelwidth -pad;
-    let scatterplotheight = window.innerHeight-navbarheight -pad;
 
 
 function maketooltip(data, width, height){
@@ -262,7 +269,10 @@ function maketooltip(data, width, height){
   const transformedPoint = (point, matrix) => {
     let x =  matrix.a * point[0] + matrix.c * point[1] + matrix.e
     let y = matrix.b * point[1]+ matrix.d * point[1] + matrix.f
-    return [x,y, point[2]]
+
+    point[0] = x
+    point[1] = y
+    return point
   };
 
 
@@ -310,7 +320,7 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
           ctx.stroke();
           
           ctx.beginPath();
-          ctx.arc(newHoverPoint[0], newHoverPoint[1], 5, 0, 2 * Math.PI);
+          ctx.arc(newHoverPoint[0], newHoverPoint[1], 10, 0, 2 * Math.PI);
           ctx.stroke()      
           ctx.fillStyle = 'green';
           ctx.fill();
@@ -361,6 +371,7 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
 
 
     var canvas, context = makeCanvas('scatterplot', 'lyr0', scatterplotwidth+pad, scatterplotheight+pad)
+    context.globalAlpha = 0.5
 
 
 
@@ -433,24 +444,53 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
     context.globalAlpha = 0.7
     context.fill();
     */
+    var clr = ['#999999',
+      '#f781bf',
+      '#4daf4a',
+      '#984ea3',
+      '#ff7f00',
+      '#e41a1c',
+      '#a65628',
+      '#377eb8']
+      
+      var clr = ['#999999',
+      '#f032e6',
+      '#911eb4',
+      '#4363d8',
+      '#3cb44b',
+      '#ffe119',
+      '#f58231',
+      '#e6194B']
 
 
+      
     data.forEach(function(point, index) {
       if  (appcontext.clusterk>1) {
-        console.log(point)
-        drawPoint([point[0],point[1]], 2, context, appcontext.clustercolors[point[3]]);
+        //console.log(point)
+        let clr = appcontext.clustercolors[point[3]]
+        if (point[3] == -1){ clr = "#dcdcdc99"}
+        drawPoint([point[0],point[1]], 2.5, context, clr);
       }else{
-        drawPoint([point[0],point[1]], 2, context, "rgba(0 ,0, 0 ,0.5)");
+        //console.log(point[3])
+        //clr[point[3]]
+        drawPoint([point[0],point[1]], 1.5, context, '#14716c');
       }
       
     })
 
-    console.log(appcontext.prevselected)
+    //console.log(appcontext.prevselected)
     appcontext.prevselected.forEach(function(points, index) {
       
       points.forEach(function(point) {
-      drawPoint([point[0],point[1]], 3, context,appcontext.clustercolors[index]);
+        drawPoint([point[0],point[1]], 1, context, clr[point[3]])
+      //drawPoint([point[0],point[1]], 3, context,appcontext.clustercolors[index]);
     })})
+
+    console.log(data)
+    appcontext.searched.forEach(function(index) {
+      drawPoint([data[index][0],data[index][1]], 10, context, '#c2677a', 0.9, 2);
+
+    })
     context.closePath()
 
     
@@ -506,6 +546,7 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
   //console.log(cElements)
 
   const canvas2 = document.getElementById('tooltip');
+  canvas2.className = "lyr3"
 
 
 function adjustZoom(zoomAmount, zoomFactor) {
@@ -554,7 +595,6 @@ if (appcontext.zoomselected){
 
 return (
     <>
-    
     </>
   ); 
 }

@@ -24,10 +24,6 @@ import LassoSelectionCanvas from './scatterplot2';
 
 
 import React, { useContext, useState } from 'react';
-import { 
-    DrawProjection,
-    clearSVG,
-} from "./utils";
 
 
 
@@ -138,7 +134,9 @@ export const Upload = () => {
         </option>,
       ];
 
+      console.log(colNames)
       for (let colName of colNames) {
+        
         colItems.push(
           <option key={colName} value={colName}>
             {colName}
@@ -230,7 +228,7 @@ export const Upload = () => {
         appcontext.setPlottedData(JSON.parse(event.target.result));
         document.getElementById("uploadnavbutton").click();
         let req = {
-          data: JSON.stringify(event.target.result),
+          data: event.target.result,
         };
   
         axios //sending data to the backend
@@ -248,12 +246,14 @@ export const Upload = () => {
       
     };
 
-  const handleColChange = (e) => {
-    appcontext.SetselectedCol(e.target.value);
-  };
+
 
   const handleChangeTxtN = (e) => {
     appcontext.setTxtN(e.target.value);
+  };
+
+  const handleChangeColorCol= (e) => {
+    appcontext.setColorCol(e.target.value);
   };
 
   const handleReductionMethodChange = (e) => {
@@ -387,6 +387,23 @@ export const Upload = () => {
                   UMAP
                 </option>
               </Form.Select>
+
+              <Form.Select
+                className="form-select input-sm"
+                size="sm"
+                aria-label="column-selection"
+                onChange={handleReductionMethodChange}
+              ></Form.Select>
+
+              Color by column
+              <Form.Control
+                style={{width:60}}
+                size="sm"
+                type="text"
+                value={appcontext.colorCol}
+                onChange={handleChangeColorCol}
+              />
+              
         </Form.Group>
 
         {/* TODO: add column selector*/}

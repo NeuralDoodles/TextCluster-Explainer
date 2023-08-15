@@ -40,6 +40,7 @@ export default function LeftDrawer() {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <IconButton
+            style={{display:"block"}}
             onClick={handleDrawerOpen}
             edge="start"
             sx={{mt:2, ml: 0,  mr: 0, ...(open ) }}

@@ -4,6 +4,7 @@ from flask_restful import reqparse
 import pandas as pd
 import io
 import umap
+import hdbscan
 from openTSNE import TSNE
 from ast import literal_eval
 from sklearn.model_selection import train_test_split
@@ -113,6 +114,7 @@ def data():
         df = pd.read_csv(io.StringIO(data),sep=",", header=0)
     print(selectedCol)
 
+
     # extracting column with color information from df
     if selectedCol != None:
         colorByCol = df.loc[:,selectedCol]
@@ -155,6 +157,8 @@ def data():
     if selectedCol != None:
         df_dr['color'] = colorByCol
 
+    print(df_dr)
+
     return df_dr.to_json(orient="split")
 
 @app.route("/quickload", methods=["POST"])
@@ -165,9 +169,13 @@ def load():
     parser.add_argument('data', type=str)
     args = parser.parse_args()
     data = json.loads(args['data'])
+    
     #df has text as metadata and other features
-    df_dr = pd.DataFrame(data, columns = ['x','y','label','color'][:len(data[0])])
+    df_dr = pd.DataFrame(data, columns = ['x','y','label'])#[:len(data[0])])
+    #df_dr = pd.DataFrame(data)
+    
     X_embedded = df_dr[['x', 'y']]
+    print(X_embedded)
 
     return df_dr.to_json(orient="split")
 
@@ -183,8 +191,15 @@ def color_by_cluster_threshold(): #pass json file from front to back and then co
     #Z = ward(pdist(X_embedded))
     #cluster_ids = fcluster(Z, t=clusterThresholdDist, criterion='maxclust') #cluster_ids[i] = cluster id of data point i
 
-    kmeans = KMeans(n_clusters=int(clusterThresholdDist), random_state=0, n_init="auto").fit(X_embedded)
-    cluster_ids = kmeans.labels_
+
+    clusterer = hdbscan.HDBSCAN(min_cluster_size=int(clusterThresholdDist) )
+    clusterer.fit(X_embedded)
+    cluster_ids =clusterer.labels_
+    
+
+
+    #kmeans = KMeans(n_clusters=int(clusterThresholdDist), random_state=0, n_init="auto").fit(X_embedded)
+    #cluster_ids = kmeans.labels_
     df_dr['color'] = cluster_ids 
     df_dr['keywords'] = np.nan
     df_dr['cluster_centers'] = np.nan
@@ -217,7 +232,9 @@ def color_by_cluster_threshold(): #pass json file from front to back and then co
     
         print(reply_content)
         df_dr.loc[cluster_pts, 'keywords'] = reply_content'''
-        df_dr.loc[cluster_pts,'cluster_centers'] = str(list(kmeans.cluster_centers_[i]))
+        #df_dr.loc[cluster_pts,'cluster_centers'] = str(list(kmeans.cluster_centers_[i]))
+        #df_dr.loc[cluster_pts,'cluster_centers'] = str(list(clusterer.cluster_centers_[i]))
+
 
     #print(df_dr)
     return df_dr.to_json(orient="split")
@@ -260,7 +277,7 @@ def categorize():
     pos_tokens = vectorizer.get_feature_names_out()[id_pos][n_pos]
     pos_token_coeffs = coeffs[0][id_pos][n_pos]
 
-    print(pos_tokens)
+    print(pos_tokens, pos_token_coeffs)
 
 
     neg_tokens = vectorizer.get_feature_names_out()[id_neg][n_neg]
@@ -279,31 +296,34 @@ def GPTexplanation():
     parser.add_argument('apiKey', type=str)
     args = parser.parse_args()
     selectedtext = args['selectedtext']
-    openai.api_key = "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" #args['apiKey']
+    openai.api_key = "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" #args['apiKey']
     
 
-    text = " ".join(selectedtext).split()[:3900]
+    #text = " ".join(selectedtext).split()[:3900]
+    text = " ".join(selectedtext).split()[:7900]
     #"Please respond with a Keyord or Phrase that best captures the common theme between the following sentences. Make sure your response is only a word or a phrase:"
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", 
-        #model="gpt-4", 
+        #model="gpt-3.5-turbo", 
+        model="gpt-4", 
         messages=[{"role": "user", "content": "Do not complete the sentences. Answer the following question: " +" ".join(text) }]
         )
     reply_content = completion.choices[0].message.content
 
     
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", 
-        #model="gpt-4", 
-        messages=[{"role": "user", "content": "I am providing a list of papers from the Conference on Human Factors in Computing Systems. Please respond with a label that best captures the common theme between the papers. Make sure your response is only one word or a phrase and is concise:" +" ".join(text) }]
+        #model="gpt-3.5-turbo", 
+        model="gpt-4", 
+        messages=[{"role": "user", "content": "Please respond with a cluster label that best summarizes these paper titles. Make sure your the label is only contains two to three words:" +" ".join(text) }]
         )
     label = completion.choices[0].message.content
     
 
     # note the use of the "assistant" role here. This is because we're feeding the model's response into context.
     #chat_history.append({"role": "assistant", "content": f"{reply_content}"})
+    #reply_content = "None"
+    #label = "Test"
     print(reply_content, label)
-    return reply_content, label
+    return reply_content, label.replace('"', ' ')
 
 
 @app.route("/test-projection", methods=["POST"])

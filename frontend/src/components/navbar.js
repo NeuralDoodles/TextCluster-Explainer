@@ -22,29 +22,38 @@ import axios from "axios";
 
 function MyNavbar() {
 
-  const appcontext = useContext(AppContext);
 
+  function searchStringInArray (str, strArray) {
+    let indices = []
+    for (var j=0; j<strArray.length; j++) {
+        if (strArray[j][2].toLowerCase().match(str)) indices.push(j);
+        
+    }
+    if (indices.length>0)return indices;
+    return [];
+}
+  
+
+function handleSearch(){
+  appcontext.setSearched([])
+    if (document.getElementById("search").value){
+      let found = searchStringInArray (document.getElementById("search").value.toLowerCase(), appcontext.plottedData)
+      appcontext.setSearched(found)
+      console.log(found)
+    }
+
+  }
+
+  function handleChagesearch(){
+    handleSearch()
+
+  }
+
+  const appcontext = useContext(AppContext);
   const localDevURL = appcontext.localDevURL;
 
 
-  function handleClusterKchange(event, newK){
-    appcontext.setClusterk(newK)
-    let req = {
-      clusterThresholdDist: appcontext.clusterk
-    };
-  
-    axios //sending data to the backend
-          .post(localDevURL + "auto-cluster", req)
-          .then((response) => {
-            appcontext.setPlottedData(response.data.data)
-            console.log(response.data.data)
-          })
-          .catch((error) => {
-            console.log(error);
-  
-          });
-  
-  }
+
   
   function handleReset(){
     appcontext.setPrevlasso([])
@@ -68,7 +77,7 @@ function MyNavbar() {
     <>
     <Navbar bg="light" expand="lg" >
       <Container fluid>
-        <Navbar.Brand href="#"><h3>TextCluster Explainer</h3></Navbar.Brand>
+        <Navbar.Brand href="#"><h3>TextCluster Explainer</h3><h6>Dataset: [Vis Papers]</h6></Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" />
         
         <Navbar.Collapse id="navbarScroll">
@@ -78,34 +87,42 @@ function MyNavbar() {
             navbarScroll
           >
             
-            <UploadDrawer />
+          <UploadDrawer />
             
             
         <ExplanationDrawer />
 
         <ExploreDrawer />
 
-        <Button variant="outline-success" onClick={handleReset}>Reset</Button>
+        <Button variant="outline-success" onClick={handleReset}>Reset Lasso</Button>
 
-        <ToggleButton variant="outline-success"  
+
+
+        <ToggleButton variant="outline-success" 
+         style={{display:"none"}}
           color="primary"  
             selected={appcontext.zoomselected}
           onClick={() => {
             appcontext.setZoomselected(!appcontext.zoomselected);
           }}>Zoom</ToggleButton>
 
+
+
           </Nav>
-          
           <Form className="d-flex">
             <Form.Control
               type="search"
-              placeholder="Input Test Text"
+              placeholder="Search"
               className="me-2"
               aria-label="Search"
+              id="search"
+              onChange={handleChagesearch}
+              
               
             />
-            <Button variant="outline-success">Show</Button>
+            <Button variant="outline-success" onClick={handleSearch}>Show</Button>
           </Form>
+
 
 
         </Navbar.Collapse>
@@ -114,18 +131,7 @@ function MyNavbar() {
 
     </Navbar>
     
-    <div  className='cluster-slider' style={{display:"none"}}>
     
-    Clusters
-    <Slider
-      size="small"
-      aria-label="perplexity"
-      value={appcontext.clusterk}
-      onChange={handleClusterKchange}
-      min={0}
-      max={100}
-    />
-  </div>
 
   
 

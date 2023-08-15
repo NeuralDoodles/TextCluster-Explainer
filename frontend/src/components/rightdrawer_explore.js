@@ -46,6 +46,7 @@ export default function RightDrawer() {
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <IconButton
+            style={{display:"block"}}
             id="explorenavbutton"
             onClick={handleDrawerOpen}
             edge="end"
@@ -80,6 +81,7 @@ export default function RightDrawer() {
         <Explore />
         
         <Divider />
+        
         
       </Drawer>
     </Box>

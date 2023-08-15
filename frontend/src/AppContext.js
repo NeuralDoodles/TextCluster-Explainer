@@ -81,6 +81,7 @@ function getCentroid(points) {
     const [autoclustercolors, setAutoclustercolors] = useState(generateColor(100))
 
     
+    const [searched, setSearched] = useState([])
 
     const [prevlasso, setPrevlasso] = useState([])
     const [lassoed, setLassoed] = useState([])
@@ -92,7 +93,9 @@ function getCentroid(points) {
     "What is the common theme between the selected sentences?";
     
     const [apikey, setApikey] = useState("");
-    const [topknumber, setTopknumber] = useState("");
+    const [topknumber, setTopknumber] = useState(30);
+    const [makecloud, setMakecloud,] = useState(false);
+    const [poswords, setPoswords] = useState([]);
     const [topwords, setTopwords] = useState([]);
     const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
     const [langexplanation, setLangexplanation] = useState(
@@ -127,6 +130,7 @@ function getCentroid(points) {
         plottedData, setPlottedData,
         lassoed, setLassoed,
         lassocentroid, setLassocentroid,
+        searched, setSearched,
         prevlasso, setPrevlasso,
         prevselected, setPrevselected,
         lastselected, setLastselected,
@@ -142,6 +146,8 @@ function getCentroid(points) {
         apikey, setApikey, 
         prompt, setPrompt,
         topknumber, setTopknumber,
+        makecloud, setMakecloud,
+        poswords, setPoswords,
         topwords, setTopwords,
         langexplanation, setLangexplanation,
         isinsidelasso, setIsinsidelasso,

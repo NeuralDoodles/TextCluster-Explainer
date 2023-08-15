@@ -46,6 +46,7 @@ export default function RightDrawer() {
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <IconButton
+            style={{display:"block"}}
             onClick={handleDrawerOpen}
             edge="end"
             sx={{mt:2, ml: 0,  mr: 0, ...(open ) }}
