@@ -71,7 +71,7 @@ jupyter_client==7.4.7
 jupyter_core==5.0.0rc0
 jupyterlab-pygments==0.2.2
 jupyterlab-widgets==3.0.3
-keras==2.12.0
+keras==2.11.0
 libclang==16.0.0
 llvmlite==0.39.1
 Markdown==3.4.3
