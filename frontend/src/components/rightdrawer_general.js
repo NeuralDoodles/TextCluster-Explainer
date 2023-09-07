@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect} from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -8,8 +8,9 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { AppContext } from '../AppContext';
+import Explain from './explanation'
 import Explore from './explore';
+import { AppContext } from '../AppContext';
 
 const drawerWidth = 300;
 
@@ -28,33 +29,32 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 
 
-export default function RightDrawer() {
+export default function RightDrawer(props) {
 
   const appcontext = useContext(AppContext);
   const theme = useTheme();
-  const [open, setOpen] = React.useState(true);
 
   const handleDrawerOpen = () => {
-    setOpen(open===false?true:false)
+    props.setOpen(props.open === true ? false : true)
+    props.setOtherOpen(false)
   };
 
   const handleDrawerClose = () => {
-    setOpen(false);
+    props.setOpen(false);
   };
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <IconButton
-            style={{display:"block"}}
-            id="explorenavbutton"
-            onClick={handleDrawerOpen}
-            edge="end"
-            sx={{mt:2, ml: 0,  mr: 0, ...(open ) }}
-          >
-            
-            <p style={{fontSize: 16}}>Explore Selection</p>
-          </IconButton>
+        style={{ display: "block" }}
+        onClick={handleDrawerOpen}
+        edge="end"
+        sx={{ mt: 2, ml: 0, mr: 0, ...(props.open) }}
+      >
+
+        <p style={{ fontSize: 16 }}>{props.type}</p>
+      </IconButton>
       <Drawer
         sx={{
           width: 5,
@@ -65,7 +65,7 @@ export default function RightDrawer() {
         }}
         variant="persistent"
         anchor="right"
-        open={open}
+        open={props.open}
       >
         <DrawerHeader>
           <IconButton onClick={handleDrawerClose}>
@@ -74,15 +74,20 @@ export default function RightDrawer() {
             ) : (
               <ChevronRightIcon />
             )}
-            Explore Your Data
+            {props.type}
           </IconButton>
         </DrawerHeader>
         <Divider />
-        <Explore />
-        
+        {
+          props.type === "Explanation" ?
+            <Explain data={appcontext.isinsidelasso} getexplain={appcontext.getexplain} selected={appcontext.lassoed} />
+            :
+            <Explore />
+        }
+
+
         <Divider />
-        
-        
+
       </Drawer>
     </Box>
   );
