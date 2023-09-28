@@ -20,7 +20,7 @@ import restaurants from '../datasets/restaurants.json';
 import ag_news from '../datasets/ag_news.json';
 import emotion from '../datasets/emotion.json';
 import * as d3 from "d3";
-import LassoSelectionCanvas from './scatterplot2';
+import LassoSelectionCanvas from './scatterplot/scatterplot_enako';
 
 
 import React, { useContext, useState } from 'react';
@@ -34,7 +34,7 @@ import { AppContext } from '../AppContext';
 library.add(faCheckSquare, faSquare);
 
 
-let width = window.innerWidth ;
+let width = window.innerWidth;
 let height = window.innerHeight - 50;
 
 
@@ -94,7 +94,7 @@ const KeyItem = ({ props }) => {
         icon={checked ? "check-square" : "square"}
         color={checked ? props.color : "#FAFAFA"}
       />
-      <p>{props.label+" : "+props.keywords}</p>
+      <p>{props.label + " : " + props.keywords}</p>
     </div>
   );
 };
@@ -102,24 +102,24 @@ const KeyItem = ({ props }) => {
 // Data upload + control panel
 export const Upload = () => {
 
-    const appcontext = useContext(AppContext);
+  const appcontext = useContext(AppContext);
 
-    const localDevURL = appcontext.localDevURL;
-    
+  const localDevURL = appcontext.localDevURL;
 
-    const fileReader = new FileReader();
-    
+
+  const fileReader = new FileReader();
+
 
 
   // Set raw file on raw file upload
-  const handleRawFileChange = (e) => { 
+  const handleRawFileChange = (e) => {
     appcontext.setRawFile(e.target.files[0]);
 
     // Uses first row from CSV to create dropdown of column names
     let rows;
     fileReader.onload = function (event) {
       appcontext.setCsvOutput(event.target.result);
-      
+
 
       rows = event.target.result.split("\n");
 
@@ -136,7 +136,7 @@ export const Upload = () => {
 
       console.log(colNames)
       for (let colName of colNames) {
-        
+
         colItems.push(
           <option key={colName} value={colName}>
             {colName}
@@ -150,71 +150,71 @@ export const Upload = () => {
     fileReader.readAsText(e.target.files[0]);
   };
 
-  const handleRawTxtFileChange = (e) => { 
+  const handleRawTxtFileChange = (e) => {
     fileReader.onload = function (event) {
       appcontext.setTxtFile(event.target.result)
     };
     fileReader.readAsText(e.target.files[0]);
-    
-    }
+
+  }
 
 
-    const handleTxtToEmb = (e) => { 
-      let req = {
-        text: appcontext.txtFile,
-        n: appcontext.txtN
-      };
-      document.getElementById("progress_embed").style.display="block"
-      axios //sending data to the backend
+  const handleTxtToEmb = (e) => {
+    let req = {
+      text: appcontext.txtFile,
+      n: appcontext.txtN
+    };
+    document.getElementById("progress_embed").style.display = "block"
+    axios //sending data to the backend
       .post(localDevURL + "generate-embeddings", req)
       .then((response) => {
-          let  data = response.data.data
-          //console.log(data.unshift(response.data.columns))
-          
-          let req = {
-            data: JSON.stringify(data),
-            reductionMethod: "UMAP",
-          };
-           data = data.map(function(value,index) { 
-             value[0] =  "\""+value[0].replace(/"/g, '""')+"\"";
-            return value
-          });
-          
-            
-        
-          let csvContent = "data:text/csv;charset=utf-8," +response.data.columns.join(",")+"\n"
+        let data = response.data.data
+        //console.log(data.unshift(response.data.columns))
+
+        let req = {
+          data: JSON.stringify(data),
+          reductionMethod: "UMAP",
+        };
+        data = data.map(function (value, index) {
+          value[0] = "\"" + value[0].replace(/"/g, '""') + "\"";
+          return value
+        });
+
+
+
+        let csvContent = "data:text/csv;charset=utf-8," + response.data.columns.join(",") + "\n"
           + data.map(e => e.join(",")).join("\n");
 
-          console.log(csvContent)
-          const link = document.createElement("a");
-          link.href = csvContent;
-          link.download = "embeddings.csv";
-          link.click();
-          document.getElementById("progress_embed").style.display="none"
+        console.log(csvContent)
+        const link = document.createElement("a");
+        link.href = csvContent;
+        link.download = "embeddings.csv";
+        link.click();
+        document.getElementById("progress_embed").style.display = "none"
 
 
 
 
-    
-          /*
-    
-          axios //sending data to the backend
-            .post(localDevURL + "upload-data", req)
-            .then((response) => {
-              //console.log("SUCCESS", response.data.data);
-              context.setPlottedData(response.data.data)
-              document.getElementById("uploadnavbutton").click();
-            })
-            .catch((error) => {
-              console.log(error);
-            })*/
+
+        /*
+  
+        axios //sending data to the backend
+          .post(localDevURL + "upload-data", req)
+          .then((response) => {
+            //console.log("SUCCESS", response.data.data);
+            context.setPlottedData(response.data.data)
+            document.getElementById("uploadnavbutton").click();
+          })
+          .catch((error) => {
+            console.log(error);
+          })*/
       })
-          
+
       .catch((error) => {
         console.log(error);
-      });  
-      }
-  
+      });
+  }
+
 
 
 
@@ -223,28 +223,28 @@ export const Upload = () => {
 
   // Set projected file on projected file upload
   const handleProjectedFileChange = (e) => {
-      fileReader.onload = function (event) {
-        console.log(JSON.parse(event.target.result))
-        appcontext.setPlottedData(JSON.parse(event.target.result));
-        document.getElementById("uploadnavbutton").click();
-        let req = {
-          data: event.target.result,
-        };
-  
-        axios //sending data to the backend
-          .post(localDevURL + "quickload", req)
-          .then((response) => {
-           console.log('Done')
-          })
-          .catch((error) => {
-            console.log(error);
-          });  
-          
+    fileReader.onload = function (event) {
+      console.log(JSON.parse(event.target.result))
+      appcontext.setPlottedData(JSON.parse(event.target.result));
+      document.getElementById("uploadnavbutton").click();
+      let req = {
+        data: event.target.result,
       };
-      console.log(e)
-      fileReader.readAsText(e.target.files[0]);
-      
+
+      axios //sending data to the backend
+        .post(localDevURL + "quickload", req)
+        .then((response) => {
+          console.log('Done')
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
     };
+    console.log(e)
+    fileReader.readAsText(e.target.files[0]);
+
+  };
 
 
 
@@ -252,7 +252,7 @@ export const Upload = () => {
     appcontext.setTxtN(e.target.value);
   };
 
-  const handleChangeColorCol= (e) => {
+  const handleChangeColorCol = (e) => {
     appcontext.setColorCol(e.target.value);
   };
 
@@ -260,8 +260,8 @@ export const Upload = () => {
     appcontext.setReductionMethod(e.target.value);
   };
 
-   // Handle file projection
-   const handleFileProject = (e) => {
+  // Handle file projection
+  const handleFileProject = (e) => {
     e.preventDefault();
 
     // Submits post request if there is not a request already being processed
@@ -277,14 +277,14 @@ export const Upload = () => {
       if (appcontext.reductionMethod === "TSNE") {
         req.perplexity = appcontext.perplexity;
       }
-      document.getElementById("progress_project").style.display="block"
+      document.getElementById("progress_project").style.display = "block"
       axios //sending data to the backend
         .post(localDevURL + "upload-data", req)
         .then((response) => {
           //console.log("SUCCESS", response.data.data);
           appcontext.setPlottedData(response.data.data)
           document.getElementById("uploadnavbutton").click();
-          document.getElementById("progress_project").style.display="none"
+          document.getElementById("progress_project").style.display = "none"
           appcontext.setDataset('')
         })
         .catch((error) => {
@@ -298,112 +298,112 @@ export const Upload = () => {
     }
   };
 
-    // Handles save of currently projected data
+  // Handles save of currently projected data
   const handleProjectionSave = (e) => {
-      const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
-        JSON.stringify(appcontext.plottedData)
-      )}`;
-      // console.log(plottedData);
-      const link = document.createElement("a");
-      link.href = jsonString;
-      link.download = "projectionview.json";
-      link.click();
-    };
+    const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
+      JSON.stringify(appcontext.plottedData)
+    )}`;
+    // console.log(plottedData);
+    const link = document.createElement("a");
+    link.href = jsonString;
+    link.download = "projectionview.json";
+    link.click();
+  };
 
 
 
   return (
     <>
-      
-      <div id ="upload-div" className="upload-panel">
-      <h6>UPLOAD TEXT FILE</h6>
-      <Form.Group controlId="formFile" className="mb-3" style={{height:80}}>
-              <Form.Control
-              style={{position:'relative', width:200}}
-                className="form-control input-sm"
-                size="sm"
-                type="file"
-                accept=".txt"
-                onChange={handleRawTxtFileChange}
-              />
-              
-              <p style={{position:'relative', left:215, top:-50,width:200}}>
-              Embed First
-              <Form.Control
-                style={{width:60}}
-                size="sm"
-                type="number"
-                value={appcontext.txtN}
-                onChange={handleChangeTxtN}
-              />sentences</p>
+
+      <div id="upload-div" className="upload-panel">
+        <h6>UPLOAD TEXT FILE</h6>
+        <Form.Group controlId="formFile" className="mb-3" style={{ height: 80 }}>
+          <Form.Control
+            style={{ position: 'relative', width: 200 }}
+            className="form-control input-sm"
+            size="sm"
+            type="file"
+            accept=".txt"
+            onChange={handleRawTxtFileChange}
+          />
+
+          <p style={{ position: 'relative', left: 215, top: -50, width: 200 }}>
+            Embed First
+            <Form.Control
+              style={{ width: 60 }}
+              size="sm"
+              type="number"
+              value={appcontext.txtN}
+              onChange={handleChangeTxtN}
+            />sentences</p>
 
 
 
-      <Button
-                style={{position:'relative', top:-70}}
-                size="sm"
-                id="dataUploadButton"
-                variant="secondary"
-                onClick={(e) => {
-                  handleTxtToEmb(e);
-                  }}
-              >
-                Embed
-               
-              </Button> 
-              <div id= "progress_embed" style={{position:'relative', left: 80,top:-105, display:"none"}}><CircularProgress />
-              <Box  style={{position:'relative', left: 0,top:-10}}>
-                <Typography variant="caption" component="div" color="text.secondary"> Loading</Typography>
-               </Box>
-               </div>  
-                
+          <Button
+            style={{ position: 'relative', top: -70 }}
+            size="sm"
+            id="dataUploadButton"
+            variant="secondary"
+            onClick={(e) => {
+              handleTxtToEmb(e);
+            }}
+          >
+            Embed
 
-              </Form.Group>
-        <hr/>
-      <h6>UPLOAD EMBEDDINGS FILE</h6>
+          </Button>
+          <div id="progress_embed" style={{ position: 'relative', left: 80, top: -105, display: "none" }}><CircularProgress />
+            <Box style={{ position: 'relative', left: 0, top: -10 }}>
+              <Typography variant="caption" component="div" color="text.secondary"> Loading</Typography>
+            </Box>
+          </div>
+
+
+        </Form.Group>
+        <hr />
+        <h6>UPLOAD EMBEDDINGS FILE</h6>
         {/* File selection */}
         <Form.Group controlId="formFile" className="mb-3">
-              <Form.Control
-                className="form-control input-sm"
-                size="sm"
-                type="file"
-                accept=".csv"
-                onChange={handleRawFileChange}
-              />
-              
-              <Form.Select
-                className="form-select input-sm"
-                size="sm"
-                aria-label="column-selection"
-                onChange={handleReductionMethodChange}
-              >
-                <option key="none" value="none">
-                  select a reduction method
-                </option>
-                <option key="TSNE" value="TSNE">
-                  T-SNE
-                </option>
-                <option key="UMAP" value="UMAP">
-                  UMAP
-                </option>
-              </Form.Select>
+          <Form.Control
+            className="form-control input-sm"
+            size="sm"
+            type="file"
+            accept=".csv"
+            onChange={handleRawFileChange}
+          />
 
-              <Form.Select
-                className="form-select input-sm"
-                size="sm"
-                aria-label="column-selection"
-                onChange={handleReductionMethodChange}
-              ></Form.Select>
+          <Form.Select
+            className="form-select input-sm"
+            size="sm"
+            aria-label="column-selection"
+            onChange={handleReductionMethodChange}
+          >
+            <option key="none" value="none">
+              select a reduction method
+            </option>
+            <option key="TSNE" value="TSNE">
+              T-SNE
+            </option>
+            <option key="UMAP" value="UMAP">
+              UMAP
+            </option>
+          </Form.Select>
 
-              Color by column
-              <Form.Control
-                style={{width:60}}
-                size="sm"
-                type="text"
-                value={appcontext.colorCol}
-                onChange={handleChangeColorCol}
-              />
-              
+          <Form.Select
+            className="form-select input-sm"
+            size="sm"
+            aria-label="column-selection"
+            onChange={handleReductionMethodChange}
+          ></Form.Select>
+
+          Color by column
+          <Form.Control
+            style={{ width: 60 }}
+            size="sm"
+            type="text"
+            value={appcontext.colorCol}
+            onChange={handleChangeColorCol}
+          />
+
         </Form.Group>
 
         {/* TODO: add column selector*/}
@@ -412,56 +412,54 @@ export const Upload = () => {
           reductionMethod={appcontext.reductionMethod}
           perplexity={appcontext.perplexity}
           perplexityChanger={appcontext.setPerplexity}
-            />
+        />
         <div className="submitButton">
-              <Button
-                size="sm"
-                id="dataUploadButton"
-                variant="secondary"
-                onClick={(e) => {
-                    handleFileProject(e);
-                  }}
-              >
-                Project
-              </Button>
-              <div id= "progress_project" style={{position:'relative', left: 80,top:-35, display:"none"}}><CircularProgress />
-              <Box  style={{position:'relative', left: 0,top:-5}}>
-                <Typography variant="caption" component="div" color="text.secondary"> Loading</Typography>
-               </Box>
-               </div>  
-                
+          <Button
+            size="sm"
+            id="dataUploadButton"
+            variant="secondary"
+            onClick={(e) => {
+              handleFileProject(e);
+            }}
+          >
+            Project
+          </Button>
+          <div id="progress_project" style={{ position: 'relative', left: 80, top: -35, display: "none" }}><CircularProgress />
+            <Box style={{ position: 'relative', left: 0, top: -5 }}>
+              <Typography variant="caption" component="div" color="text.secondary"> Loading</Typography>
+            </Box>
+          </div>
+
         </div>
         <hr />
         {/* Use previously cached projection */}
         <h6>LOAD PROJECTION</h6>
 
         <Form.Group controlId="previousProjectionFile" className="mb-3">
-        <Form.Control
-          className="form-control input-sm"
-          size="sm"
-          type="file"
-          accept=".json"
-          onChange={handleProjectedFileChange}
-        />
-      </Form.Group>
-      <div className="button-box">
-        
-        <hr />
-        <Button
-          size="sm"
-          id="bookmarkButton"
-          variant="outline-secondary"
-          onClick={handleProjectionSave}
-        >
-          Download Projection
-        </Button>
+          <Form.Control
+            className="form-control input-sm"
+            size="sm"
+            type="file"
+            accept=".json"
+            onChange={handleProjectedFileChange}
+          />
+        </Form.Group>
+        <div className="button-box">
+
+          <hr />
+          <Button
+            size="sm"
+            id="bookmarkButton"
+            variant="outline-secondary"
+            onClick={handleProjectionSave}
+          >
+            Download Projection
+          </Button>
         </div>
       </div>
 
-      <LassoSelectionCanvas data = {appcontext.plottedData}/>
 
+    </>
 
-      </>
-      
   );
 };

@@ -12,8 +12,6 @@ import Slider from "@mui/material/Slider";
 import ToggleButton from '@mui/material/ToggleButton';
 import CheckIcon from '@mui/icons-material/Check';
 
-import axios from "axios";
-
 
 
 
@@ -51,8 +49,14 @@ function MyNavbar() {
   const localDevURL = appcontext.localDevURL;
   const [openExplanation, setOpenExplanation] = React.useState(false);
   const [openExplore, setOpenExplore] = React.useState(false);
+  const navbarRef = useRef(null)
 
-
+  useEffect(() => {
+    const navbarElement = navbarRef.current
+    if (navbarElement) {
+      appcontext.setNavBarHeight(navbarElement.offsetHeight)
+    }
+  }, [navbarRef])
 
 
   function handleReset() {
@@ -60,22 +64,11 @@ function MyNavbar() {
     //appcontext.setPrevselected([])
 
   }
-  /*
-  <NavDropdown title="Display" id="navbarScrollingDropdown">
-              <NavDropdown.Item href="#action3">Change Dotsize</NavDropdown.Item>
-              <NavDropdown.Item href="#action4">
-                Change Opacity
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#action5">
-                Reset
-              </NavDropdown.Item>
-            </NavDropdown>
-            */
+
   return (
 
     <>
-      <Navbar bg="light" expand="lg" >
+      <Navbar ref={navbarRef} bg="light" expand="lg" >
         <Container fluid>
           <Navbar.Brand href="#"><h3>TextCluster Explainer</h3><h6>Dataset: [Vis Papers]</h6></Navbar.Brand>
           <Navbar.Toggle aria-controls="navbarScroll" />

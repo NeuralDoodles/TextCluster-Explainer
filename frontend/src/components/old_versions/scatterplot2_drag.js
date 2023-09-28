@@ -1,8 +1,8 @@
 import React, {useRef, useContext, useEffect} from "react";
 import * as d3 from "d3";
-import { AppContext } from '../AppContext';
+import { AppContext } from '../../AppContext';
 import { quadtree } from 'd3-quadtree' // v^2.0.0
-import  Explain  from "./explanation";
+import  Explain  from "../explanation";
 
 //datum:
 //0: x

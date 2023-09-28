@@ -2,19 +2,16 @@ import React from 'react';
 import MyNavbar from './components/navbar'
 import { ProjectionView } from './components/projectionview';
 import { ContextWrapper } from './AppContext';
-import LassoSelectionCanvas from './components/scatterplot2';
-import * as d3 from "d3";
-
-
+import MyViz from './components/visualizationbody';
 
 function App() {
- 
-  
+
   return (
     <div className="App">
-        <ContextWrapper>
-          <MyNavbar />
-      	</ContextWrapper>
+      <ContextWrapper>
+        <MyNavbar />
+        <MyViz />
+      </ContextWrapper>
 
 
     </div>

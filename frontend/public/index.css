@@ -1,0 +1,10 @@
+#lasso-cursor {
+  width: 32px;
+  height: 32px;
+  background-color: #000; /* Lasso cursor color */
+  border: 2px solid #fff; /* Lasso cursor border */
+  border-radius: 50%; /* Create a circle for the cursor */
+  position: absolute;
+  pointer-events: none; /* Ensure it doesn't interfere with interactions */
+  transform: translate(-50%, -50%); /* Center the cursor on the mouse pointer */
+}
