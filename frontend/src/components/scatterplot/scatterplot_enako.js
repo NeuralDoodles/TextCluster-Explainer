@@ -6,14 +6,16 @@ import lasso from "./d3-lasso-adapted"
 
 function LassoSelectionCanvas({ data, width, height }) {
 
+  
   console.log(data)
   const [ currentZoomScale, setCurrentZoomScale ] = useState(1)
-  // const [ isLassoOn, setIsLassoOn ] = useState(false)
+  const [ coordinateShift, setCoordinateShift ] = useState([0,0])
   
   const svgRef = useRef(null);
 
   useEffect(() => {
     const svg = d3.select(svgRef.current).attr("viewBox", [0, 0, width, height]);
+    var isLassoOn = false;
     const path = d3.geoPath() // NEW
     const l = svg.append("path").attr("class", "lasso") //NEW
     const g = svg.append("g")
@@ -39,8 +41,8 @@ function LassoSelectionCanvas({ data, width, height }) {
     const circles = g.selectAll("circle")
       .data(data)
       .join("circle")
-        .attr("cx", ([x]) => 200 * x) //TODO: change the scaling depending on dimension
-        .attr("cy", ([, y]) => 200 * y) //TODO: change the scaling depending on dimension
+        .attr("cx", ([x]) => 100 * x) //TODO: change the scaling depending on dimension
+        .attr("cy", ([, y]) => 100 * y) //TODO: change the scaling depending on dimension
         .attr("r", 4) //TODO: adjust size dpeending on diimension
         .attr("fill", color)
       
@@ -54,7 +56,8 @@ function LassoSelectionCanvas({ data, width, height }) {
     `);
 
     function draw(polygon) {
-      // if (isLassoOn) {
+      console.log(isLassoOn)
+      if (isLassoOn) {
         l.datum({
           type: "LineString",
           coordinates: polygon
@@ -68,11 +71,12 @@ function LassoSelectionCanvas({ data, width, height }) {
         circles.classed(
           "selected",
           polygon.length > 2
-            ? d => d3.polygonContains(polygon, [d[0] * 200 * currentZoomScale, d[1] * 200 * currentZoomScale]) && selected.push(d) // need to change scale
+            ? d => d3.polygonContains(polygon, [((d[0] * 100) - coordinateShift[0]) / currentZoomScale, ((d[1] * 100) + coordinateShift[1]) / currentZoomScale ]) && selected.push(d) // need to change scale
             : false
         );
-          console.log(selected)
-      // }
+          console.log("selected", selected)
+          console.log("polygon", polygon)
+      }
   
       // svg.node().value = { polygon, selected };
       // svg.node().dispatchEvent(new CustomEvent('input'));
@@ -81,15 +85,15 @@ function LassoSelectionCanvas({ data, width, height }) {
     const lassoModeOn = (event) => { // lasso mode on while shift key pressed
       if (event.shiftKey) {
         console.log("ON")
-        // setIsLassoOn(true)
+        isLassoOn = true;
         svg.call(lasso().on("start lasso end", draw)); // TURNS ON LASSO
       }
     }
 
     const lassoModeOff = () => {
       console.log("OFF")
-      // setIsLassoOn(false)
-      l.on('.lasso', null);
+      isLassoOn = false;
+      // l.on('.lasso', null);
     }
     
     window.addEventListener('keydown', lassoModeOn);
@@ -109,8 +113,12 @@ function LassoSelectionCanvas({ data, width, height }) {
     );
 
     function zoomed({ transform }) {
-      g.attr("transform", transform);
-      setCurrentZoomScale(transform.k)
+      if (!isLassoOn) {
+        g.attr("transform", transform);
+        console.log("transform", transform)
+        setCurrentZoomScale(transform.k)
+        setCoordinateShift([transform.x, transform.y])
+      }
     }
 
     
