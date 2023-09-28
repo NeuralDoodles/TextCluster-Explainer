@@ -56,7 +56,6 @@ function LassoSelectionCanvas({ data, width, height }) {
     `);
 
     function draw(polygon) {
-      console.log(isLassoOn)
       if (isLassoOn) {
         l.datum({
           type: "LineString",
