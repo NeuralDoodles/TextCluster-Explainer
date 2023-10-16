@@ -55,7 +55,7 @@ function LassoSelectionCanvas({ data, width, height }) {
       .join("circle")
         .attr("cx", ([cx]) => x(cx)) //TODO: change the scaling depending on dimension
         .attr("cy", ([, cy]) => y(cy)) //TODO: change the scaling depending on dimension
-        .attr("r", 1/currentZoomScale) //TODO: adjust size dpeending on diimension
+        .attr("r", 1) //TODO: adjust size dpeending on diimension
         .attr("fill", color)
       
     circles.append("title")
@@ -72,7 +72,7 @@ function LassoSelectionCanvas({ data, width, height }) {
       //console.log(polygon)
 
       if (isLassoOn) {
-        var polygon = polygon.map((p) => [p[0]*currentZoomScale + coordinateShift[0],p[1]*currentZoomScale+coordinateShift[1]])
+        //var polygon = polygon.map((p) => [p[0]*currentZoomScale + coordinateShift[0],p[1]*currentZoomScale+coordinateShift[1]])
 
         l.datum({
           type: "LineString",
@@ -80,7 +80,6 @@ function LassoSelectionCanvas({ data, width, height }) {
         }).attr("d", path);
     
         const selected = [];
-        console.log(currentZoomScale, coordinateShift)
     
         // note: d3.polygonContains uses the even-odd rule
         // which is reflected in the CSS for the lasso shape
