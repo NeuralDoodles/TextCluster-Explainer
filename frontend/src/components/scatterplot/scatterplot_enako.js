@@ -6,10 +6,22 @@ import lasso from "./d3-lasso-adapted"
 
 function LassoSelectionCanvas({ data, width, height }) {
 
+  let x = d3.scaleLinear().range([0, width]),
+      y = d3.scaleLinear().range([0, height]);
+
+    
+    
+
+    var d_extent_x = d3.extent(data, (d) => +d[0]),
+        d_extent_y = d3.extent(data, (d) => +d[1]);
+
+    // Draw axes
+    x.domain(d_extent_x);
+    y.domain(d_extent_y);
+
   
-  console.log(data)
-  const [ currentZoomScale, setCurrentZoomScale ] = useState(1)
-  const [ coordinateShift, setCoordinateShift ] = useState([0,0])
+  var [ currentZoomScale, setCurrentZoomScale ] = useState(1)
+  var [ coordinateShift, setCoordinateShift ] = useState([0,0])
   
   const svgRef = useRef(null);
 
@@ -41,9 +53,9 @@ function LassoSelectionCanvas({ data, width, height }) {
     const circles = g.selectAll("circle")
       .data(data)
       .join("circle")
-        .attr("cx", ([x]) => 100 * x) //TODO: change the scaling depending on dimension
-        .attr("cy", ([, y]) => 100 * y) //TODO: change the scaling depending on dimension
-        .attr("r", 4) //TODO: adjust size dpeending on diimension
+        .attr("cx", ([cx]) => x(cx)) //TODO: change the scaling depending on dimension
+        .attr("cy", ([, cy]) => y(cy)) //TODO: change the scaling depending on dimension
+        .attr("r", 1/currentZoomScale) //TODO: adjust size dpeending on diimension
         .attr("fill", color)
       
     circles.append("title")
@@ -56,25 +68,30 @@ function LassoSelectionCanvas({ data, width, height }) {
     `);
 
     function draw(polygon) {
+
+      //console.log(polygon)
+
       if (isLassoOn) {
+        var polygon = polygon.map((p) => [p[0]*currentZoomScale + coordinateShift[0],p[1]*currentZoomScale+coordinateShift[1]])
+
         l.datum({
           type: "LineString",
           coordinates: polygon
         }).attr("d", path);
     
         const selected = [];
-        
+        console.log(currentZoomScale, coordinateShift)
     
         // note: d3.polygonContains uses the even-odd rule
         // which is reflected in the CSS for the lasso shape
         circles.classed(
           "selected",
           polygon.length > 2
-            ? d => d3.polygonContains(polygon, [((d[0] * 100) - coordinateShift[0]) / currentZoomScale, ((d[1] * 100) + coordinateShift[1]) / currentZoomScale ]) && selected.push(d) // need to change scale
+            ? d => d3.polygonContains(polygon, [x(d[0])*currentZoomScale + coordinateShift[0], y(d[1])*currentZoomScale+coordinateShift[1]]) && selected.push(d) // need to change scale
             : false
         );
-          console.log("selected", selected)
-          console.log("polygon", polygon)
+          //console.log("selected", selected)
+          //console.log("polygon", polygon)
       }
   
       // svg.node().value = { polygon, selected };
@@ -83,6 +100,7 @@ function LassoSelectionCanvas({ data, width, height }) {
 
     const lassoModeOn = (event) => { // lasso mode on while shift key pressed
       if (event.shiftKey) {
+        console.log()
         console.log("ON")
         isLassoOn = true;
         svg.call(lasso().on("start lasso end", draw)); // TURNS ON LASSO
@@ -115,8 +133,11 @@ function LassoSelectionCanvas({ data, width, height }) {
       if (!isLassoOn) {
         g.attr("transform", transform);
         console.log("transform", transform)
-        setCurrentZoomScale(transform.k)
-        setCoordinateShift([transform.x, transform.y])
+        //setCurrentZoomScale(transform.k)
+        //setCoordinateShift([transform.x, transform.y])
+        //set___ function not working?
+        currentZoomScale = transform.k
+        coordinateShift = [transform.x, transform.y]
       }
     }
 

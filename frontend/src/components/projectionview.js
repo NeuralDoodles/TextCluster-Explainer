@@ -14,8 +14,6 @@ const localDevURL = "http://127.0.0.1:8000/";
 const DEFAULT_PROMPT =
   "What is the common theme between the selected sentences?";
 
-let width = window.innerWidth ;
-let height = window.innerHeight - 50;
 
 
 // Line element
