@@ -223,6 +223,7 @@ export const Upload = () => {
 
   // Set projected file on projected file upload
   const handleProjectedFileChange = (e) => {
+      console.log(e)
       fileReader.onload = function (event) {
         console.log(JSON.parse(event.target.result))
         appcontext.setPlottedData(JSON.parse(event.target.result));

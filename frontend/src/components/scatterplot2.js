@@ -12,7 +12,7 @@ import Slider from "@mui/material/Slider";
 //2: label
 
 
-function drawPoint([cx,cy], r, ctx, color, alpha = 0.6, lineWidth = 0.05) {
+function drawPoint([cx,cy], r, ctx, color, alpha = 0.8, lineWidth = 0.0) {
 
 
   // NOTE; each point needs to be drawn as its own path
@@ -24,7 +24,7 @@ function drawPoint([cx,cy], r, ctx, color, alpha = 0.6, lineWidth = 0.05) {
   //context.closePath();
   ctx.lineWidth = lineWidth;
   ctx.strokeStyle = "black";
-  ctx.stroke();
+  //ctx.stroke();
   ctx.fillStyle = color
   ctx.fill();
   ctx.globalAlpha = alpha
@@ -66,7 +66,7 @@ const leftpanelwidth = 300
 const navbarheight = 100
 const pad = 50
 
-let scatterplotwidth = window.innerWidth-leftpanelwidth -pad;
+let scatterplotwidth = window.innerWidth-leftpanelwidth -pad-300;
 let scatterplotheight = window.innerHeight-navbarheight -pad;
 
  makeCanvas('labels', 'lyr2', scatterplotwidth+300, scatterplotheight)
@@ -469,11 +469,11 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
         //console.log(point)
         let clr = appcontext.clustercolors[point[3]]
         if (point[3] == -1){ clr = "#dcdcdc99"}
-        drawPoint([point[0],point[1]], 2.5, context, clr);
+        drawPoint([point[0],point[1]], 3.5, context, clr);
       }else{
         //console.log(point[3])
         //clr[point[3]]
-        drawPoint([point[0],point[1]], 1.5, context, '#14716c');
+        drawPoint([point[0],point[1]], 2.5, context, '#14716c');
       }
       
     })

@@ -14,11 +14,20 @@ import MenuItem from '@mui/material/MenuItem';
 function addlabel(label, center){
   var canvas = document.getElementById('labels')
   canvas.className = "lyr3";
-  var context = canvas.getContext('2d');
-  context.font = "15px Georgia";
-  let w = context.measureText(label).width;
-  context.fillText(label, center[0]-w/2,center[1]-10);
-}
+  var ctx = canvas.getContext('2d');
+  //ctx.font = "15px Georgia";
+  let w = ctx.measureText(label).width;
+  //ctx.fillText(label, center[0]-w/2,center[1]-10);
+
+  ctx.font="15px verdana";
+  ctx.shadowColor="black";
+  ctx.shadowBlur=10;
+  ctx.lineWidth=2;
+  ctx.strokeText(label, center[0]-w/2,center[1]-10);
+  ctx.shadowBlur=0;
+  ctx.fillStyle="white";
+  ctx.fillText(label, center[0]-w/2,center[1]-10);
+  }
 
 
   // Gets centroid of set of points
@@ -133,20 +142,21 @@ const toggleExpDiv = (e, id, txt) => {
     
     const [selectedItems, setSelectedItems] = useState([]);
 
-function drawTestProjection(point){
+function drawTestProjection(point,size){
 
         
 
         const canvas2 = document.getElementById('scatterplot');
         const ctx = canvas2.getContext('2d');
 
-    
+        
         ctx.beginPath();
-        ctx.arc(appcontext.xscale(+point[0][0]),appcontext.yscale(+point[0][1]), 8, 0, 2 * Math.PI);
+        ctx.globalAlpha = 1
+        ctx.arc(appcontext.xscale(+point[0][0]),appcontext.yscale(+point[0][1]), size, 0, 2 * Math.PI);
         ctx.stroke()      
         ctx.fillStyle = 'salmon';
         ctx.fill();
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.strokeStyle = '#003300';
         ctx.stroke();
     
@@ -166,7 +176,7 @@ const handleTextClick = (e) => {
       })
       .then((response) => {
         console.log(response.data.data)
-        drawTestProjection(response.data.data)
+        drawTestProjection(response.data.data, 15)
       })
       .catch((error) => {
         console.log(error);

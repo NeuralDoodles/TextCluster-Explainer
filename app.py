@@ -220,7 +220,7 @@ def color_by_cluster_threshold(): #pass json file from front to back and then co
         
         '''
         text = " ".join(sentences).split()[:3500]
-        openai.api_key = "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" #args['apiKey']
+        openai.api_key = "" #args['apiKey']
 
         #openai.api_key =""
         completion = openai.ChatCompletion.create(
@@ -296,7 +296,7 @@ def GPTexplanation():
     parser.add_argument('apiKey', type=str)
     args = parser.parse_args()
     selectedtext = args['selectedtext']
-    openai.api_key = "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" #args['apiKey']
+    openai.api_key = "" #args['apiKey']
     
 
     #text = " ".join(selectedtext).split()[:3900]
@@ -309,12 +309,14 @@ def GPTexplanation():
         )
     reply_content = completion.choices[0].message.content
 
+    completion =openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are an expert in concise text summarization."},
+            {"role": "user", "content": "Please respond with a cluster label that best summarizes these visualization paper titles. Make sure your the label is only contains two to three words:" +" ".join(text)},
+        ]
+    )
     
-    completion = openai.ChatCompletion.create(
-        #model="gpt-3.5-turbo", 
-        model="gpt-4", 
-        messages=[{"role": "user", "content": "Please respond with a cluster label that best summarizes these paper titles. Make sure your the label is only contains two to three words:" +" ".join(text) }]
-        )
     label = completion.choices[0].message.content
     
 

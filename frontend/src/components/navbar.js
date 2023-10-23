@@ -94,7 +94,7 @@ function handleSearch(){
 
         <ExploreDrawer />
 
-        <Button variant="outline-success" onClick={handleReset}>Reset Lasso</Button>
+        <Button variant="outline-success" onClick={handleReset}>Clear</Button>
 
 
 
