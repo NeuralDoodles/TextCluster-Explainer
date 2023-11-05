@@ -55,9 +55,9 @@ function LassoSelectionCanvas({ data, width, height }) {
     var circles = g.selectAll("circle")
       .data(data)
       .join("circle")
-      .attr("cx", ([cx]) => x(cx)) //TODO: change the scaling depending on dimension
-      .attr("cy", ([, cy]) => y(cy)) //TODO: change the scaling depending on dimension
-      .attr("r", 1) //TODO: adjust size dpeending on diimension
+      .attr("cx", ([cx]) => x(cx))
+      .attr("cy", ([, cy]) => y(cy))
+      .attr("r", 1)
       .attr("fill", color)
 
     circles.append("title")
@@ -72,7 +72,6 @@ function LassoSelectionCanvas({ data, width, height }) {
       console.log('lassoed', appcontext.lassoed);
 
       if (isLassoOn) {
-
         l.datum({
           type: "LineString",
           coordinates: polygon
@@ -154,6 +153,8 @@ function LassoSelectionCanvas({ data, width, height }) {
         console.log("transform", transform)
         currentZoomScale = transform.k
         coordinateShift = [transform.x, transform.y]
+        l.attr("transform", `translate(${coordinateShift[0]},${coordinateShift[1]}) scale(${currentZoomScale})`); // SCALING THE LASSO LINE. DOESN'T WORK ALL THE TIME
+
       }
     }
 
