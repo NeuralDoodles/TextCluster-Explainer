@@ -1,10 +1,12 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 // import * as d3 from "d3";
 // import * as d3lasso from "d3-lasso"
 import d3 from "./d3-extended"
 import lasso from "./d3-lasso-adapted"
+import { AppContext } from "../../AppContext";
 
 function LassoSelectionCanvas({ data, width, height }) {
+  const appcontext = useContext(AppContext);
 
   let x = d3.scaleLinear().range([0, width]),
     y = d3.scaleLinear().range([0, height]);
@@ -21,8 +23,7 @@ function LassoSelectionCanvas({ data, width, height }) {
 
   var currentZoomScale = 1
   var coordinateShift = [0, 0]
-  // var selected = []
-  var selected = new Set()
+  var lasso_counter = -1
 
   const svgRef = useRef(null);
 
@@ -51,7 +52,7 @@ function LassoSelectionCanvas({ data, width, height }) {
     var color = 'black' // TODO: Change later
 
     // Drawing all circles
-    const circles = g.selectAll("circle")
+    var circles = g.selectAll("circle")
       .data(data)
       .join("circle")
       .attr("cx", ([cx]) => x(cx)) //TODO: change the scaling depending on dimension
@@ -63,43 +64,64 @@ function LassoSelectionCanvas({ data, width, height }) {
       .text((d, i) => d[2])
 
     // NEW Lasso Functionality ------
-    svg.append("defs").append("style").text(` 
-      .selected {r: 4; fill: red}
-      .lasso { fill-rule: evenodd; fill-opacity: 0.1; stroke-width: 1.5; stroke: #000; }
-    `);
+
+    const initialStyles = ".lasso { fill-rule: evenodd; fill-opacity: 0.1; stroke-width: 1.5; stroke: #000; }"
+    svg.append("defs").append("style").text(initialStyles);
 
     function draw(polygon) {
-
-      console.log('selected', selected)
+      console.log('lassoed', appcontext.lassoed);
 
       if (isLassoOn) {
-        //var polygon = polygon.map((p) => [p[0]*currentZoomScale + coordinateShift[0],p[1]*currentZoomScale+coordinateShift[1]])
 
         l.datum({
           type: "LineString",
           coordinates: polygon
         }).attr("d", path);
 
+        // Update the attributes of the selected circles
+        circles = circles.join("circle")
+          .attr("r", function (d) {
+            // Check if the circle is selected based on the lasso selection
+            var isCircleSelected = polygon.length > 2 ? d3.polygonContains(polygon, [x(d[0]) * currentZoomScale + coordinateShift[0], y(d[1]) * currentZoomScale + coordinateShift[1]]) : false;
+            if (isCircleSelected) {
+              appcontext.setLassoed(appcontext.lassoed.add(d))
+            }
+            else {
+              for (var i = 0; i < appcontext.prevlasso.length; i++) { // goes through all of the previously lassoed points
+                if (appcontext.prevlasso[i].has(d)) isCircleSelected = true
+              }
+            }
+            // Define the new radius based on selection
+            return isCircleSelected ? 4 : 1; // Adjust the radius values as needed
+          })
+          .attr("fill", function (d) {
+            var isCircleSelected = polygon.length > 2 ? d3.polygonContains(polygon, [x(d[0]) * currentZoomScale + coordinateShift[0], y(d[1]) * currentZoomScale + coordinateShift[1]]) : false;
+            var lasso_color = color
+            if (isCircleSelected) {
+              lasso_color = appcontext.clustercolors[lasso_counter]
+            }
+            for (var i = 0; i < appcontext.prevlasso.length; i++) { // goes through all of the previously lassoed points
+              if (appcontext.prevlasso[i].has(d)) {
+                lasso_color = appcontext.clustercolors[i]
+              }
+            }
+            return lasso_color;
+          });
 
-        // note: d3.polygonContains uses the even-odd rule
-        // which is reflected in the CSS for the lasso shape
-        circles.classed(
-          "selected",
-          polygon.length > 2
-            ? d => selected.has(d) || d3.polygonContains(polygon, [x(d[0]) * currentZoomScale + coordinateShift[0], y(d[1]) * currentZoomScale + coordinateShift[1]]) && selected.add(d)
-            : false
-        );
-        //console.log("selected", selected)
-        //console.log("polygon", polygon)
+
       }
-
-      // svg.node().value = { polygon, selected };
-      // svg.node().dispatchEvent(new CustomEvent('input'));
     }
 
     const lassoModeOn = (event) => { // lasso mode on while shift key pressed
       if (event.shiftKey) {
-        console.log()
+        lasso_counter = (lasso_counter + 1) % 100
+
+        if (appcontext.lassoed.size != 0) { // updates the list of previous lassoes 
+          // Didn't work when I used setPrevlasso and setLassoed functions
+          appcontext.prevlasso.push(new Set(appcontext.lassoed));
+          appcontext.lassoed.clear() // empties the set that contains the current lasso
+        }
+
         console.log("ON")
         isLassoOn = true;
         svg.call(lasso().on("start lasso end", draw)); // TURNS ON LASSO
@@ -109,13 +131,11 @@ function LassoSelectionCanvas({ data, width, height }) {
     const lassoModeOff = () => {
       console.log("OFF")
       isLassoOn = false;
-      // l.on('.lasso', null);
     }
 
     window.addEventListener('keydown', lassoModeOn);
     window.addEventListener('keyup', lassoModeOff)
 
-    // svg.call(lasso().on("start lasso end", draw));
 
     ///--------
 

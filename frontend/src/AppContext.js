@@ -13,7 +13,6 @@ export const AppContext = React.createContext(null);
 export const ContextWrapper = (props) => {
 
   function generateColor(n) {
-
     return Array.from({ length: n }, () => '#' + Math.random().toString(16).substr(-6));
   }
 
@@ -83,8 +82,9 @@ export const ContextWrapper = (props) => {
 
   const [searched, setSearched] = useState([])
 
-  const [prevlasso, setPrevlasso] = useState([])
-  const [lassoed, setLassoed] = useState([])
+  // Lasso
+  const [prevlasso, setPrevlasso] = useState([]) // array of sets of lassoed points
+  const [lassoed, setLassoed] = useState(new Set()) // most recent lasso
   const [lassocentroid, setLassocentroid] = useState([])
   const [isinsidelasso, setIsinsidelasso] = useState([])
   const [getexplain, setGetexplain] = useState(false)
