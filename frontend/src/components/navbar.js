@@ -60,9 +60,7 @@ function MyNavbar() {
 
 
   function handleReset() {
-    appcontext.setPrevlasso([])
-    //appcontext.setPrevselected([])
-
+    appcontext.setIsLassoReset(true)
   }
 
   return (

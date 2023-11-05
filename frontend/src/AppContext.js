@@ -85,9 +85,11 @@ export const ContextWrapper = (props) => {
   // Lasso
   const [prevlasso, setPrevlasso] = useState([]) // array of sets of lassoed points
   const [lassoed, setLassoed] = useState(new Set()) // most recent lasso
+  const [isLassoReset, setIsLassoReset] = useState(false)
   const [lassocentroid, setLassocentroid] = useState([])
   const [isinsidelasso, setIsinsidelasso] = useState([])
   const [getexplain, setGetexplain] = useState(false)
+
 
   const DEFAULT_PROMPT =
     "What is the common theme between the selected sentences?";
@@ -129,6 +131,7 @@ export const ContextWrapper = (props) => {
     lassocentroid, setLassocentroid,
     searched, setSearched,
     prevlasso, setPrevlasso,
+    isLassoReset, setIsLassoReset,
     prevselected, setPrevselected,
     lastselected, setLastselected,
     clustercolors, setClustercolors,
