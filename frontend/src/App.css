@@ -19,23 +19,59 @@
 
 /* Right panel */
 .explain-panel {
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5), -5px -5px 15px rgba(0, 0, 0, 0.3);
+  border: 1px solid #000000;
+  position: absolute;
+  margin-left: '1em';
+  margin-top: '1em';
+  top:10%;
+  left:80%;
   font-size: 75%;
   width: 300px;
-  height: 100vh;
   padding: 1em;
   padding-right: 1em;
+  border-radius: 15px;
   overflow: scroll;
   overflow-x: scroll;
+  z-index:100;
+}
+
+/* Right panel */
+.test-panel {
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5), -5px -5px 15px rgba(0, 0, 0, 0.3);
+  border: 1px solid #000000;
+  position: absolute;
+  margin-left: '1em';
+  margin-top: '1em';
+  top:60%;
+  left:80%;
+  font-size: 75%;
+  width: 300px;
+  padding: 1em;
+  padding-right: 1em;
+  border-radius: 15px;
+  overflow: scroll;
+  overflow-x: scroll;
+  z-index:100;
+  
 }
 
 /* Right panel */
 .explore-panel {
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5), -5px -5px 15px rgba(0, 0, 0, 0.3);
+  border: 1px solid #000000;
+  position: absolute;
+  margin-left: '0em';
+  margin-top: '0em';
+  top:45%;
+  left:10px;
   font-size: 75%;
   width: 300px;
-  height: 100vh;
   padding: 1em;
   padding-right: 1em;
-  overflow: scroll;
+  z-index:100;
+  border-radius: 15px;
+  overflow: visible;
   overflow-x: scroll;
 }
 
@@ -100,3 +136,4 @@ body {
     height: 10%;
     z-index: 3;
 }
+

@@ -12,6 +12,13 @@ import MenuItem from '@mui/material/MenuItem';
 import WordCloud from 'react-d3-cloud';
 import Divider from "@mui/material/Divider";
 
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
+
 
 const data = [
   { text: 'Hey', value: 1000 },
@@ -26,17 +33,19 @@ const localDevURL = "http://127.0.0.1:8000/";
 
 
 
- function Explore(data) {
 
+ function Explore(data) {
   let labelDict = {};
   let SelectedItems = []
     const appcontext = useContext(AppContext);
 
 
     
-    const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
-    
+  const position = (e)=>{
+    console.log(e)
+    return Math.random()
+
+  }
     
 
     function handleAutoCluster(event){
@@ -76,7 +85,7 @@ const localDevURL = "http://127.0.0.1:8000/";
 
   
     }
-    function handleClusterKchange(event, newK){
+  function handleClusterKchange(event, newK){
       appcontext.setClusterk(newK)
       let req = {
         clusterThresholdDist: appcontext.clusterk
@@ -95,9 +104,6 @@ const localDevURL = "http://127.0.0.1:8000/";
     
     }
 
-    const handleClickMenu = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
 
     function handleChangetopknumber(e, newtopk){
       appcontext.setTopknumber(newtopk)
@@ -151,7 +157,8 @@ const localDevURL = "http://127.0.0.1:8000/";
 
       if (appcontext.lassoed.length > 0) {
 
-        if (appcontext.makecloud) {
+        
+        if (appcontext.getexplain) {
 
         //categorizedPoints.push([idInfo.label, 1]);
 
@@ -167,9 +174,13 @@ const localDevURL = "http://127.0.0.1:8000/";
             
             return { text: e[0], value: (e[1]*30)**3 }
           })
+          console.log(appcontext.poswords, words)
+          if (appcontext.poswords!=words){
+            console.log("making clouds")
+            appcontext.setPoswords(words)         
+            appcontext.setMakecloud(true)
+          }
 
-          appcontext.setPoswords(words)         
-          appcontext.setMakecloud(false)
         
           
           //let newTopWords = drawClouds(response.data.data);
@@ -314,107 +325,119 @@ const localDevURL = "http://127.0.0.1:8000/";
 
 
     return (
-        
-        <div id ="explore-div" className="explore-panel">
-          <div style={{display: 'flex',  justifyContent:'center', alignItems:'center', position:"relative", top: -12,}}> 
-        <Button variant="secondary" size="sm" onClick={handleAutoCluster}>AutoCluster</Button>
-      </div>
-      <Divider />
-              <br/>
-        <div id = "positive-cloud-div"  >
-        
-              Show top keyyyyyy  phrases in selection
-              <Form.Control
-                style={{ position:"relative", top: -25, left:55,width:50}}
-                size="sm"
-                type="number"
-                value={appcontext.topknumber}
-                onChange={handleChangetopknumber}
-              /> 
-        
+        <>
+        <div style={{display: 'block', position:"relative", top: -8, left: 28}}> 
+                <Button variant="dark" size="sm" onClick={handleAutoCluster}>AutoCluster</Button>
+
+            </div>
+        <div id ="explore-div" className="explore-panel" style={{display:'none'}}>
+
+      <div class="accordion" id="accordionExample111">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading111">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse111" aria-expanded="true" aria-controls="collapse111">
+            <h3>Explore</h3>
+            
+            </button>
+            
+          </h2>
+          <div id="collapse111" class="accordion-collapse collapse show" aria-labelledby="heading111" data-bs-parent="#accordionExample111">
+            <div class="accordion-body">
         
 
-        {appcontext.lastselected.length > 0
-              ?   <WordCloud
-              data={appcontext.poswords}
-              width={300}
-              height={300}
-              //font="Times"
-              //fontStyle="italic"
-              //fontWeight="bold"
-              //fontSize={(word) => Math.log2(word.value) * 5}
-              spiral="rectangular"
-              rotate={0}
-              padding={2}
-              //random={Math.random}
-              fill={(d, i) => 'black'}
-              onWordClick={(event, d) => {
-                //handleSearch(d.text)
-                console.log(`onWordClick: ${d.text}`);
-              }}
-              onWordMouseOver={(event, d) => {
-                
-                console.log(`onWordMouseOver: ${d.text}`);
-              }}
-              onWordMouseOut={(event, d) => {
-                //appcontext.setSearched([])
-                console.log(`onWordMouseOut: ${d.text}`);
-              }}
-            />
-              : null}
 
-
-
+              <div id = "positive-cloud-div" style={{display: 'none',}} >
               
+                    Show top keyyyyyy  phrases in selection
+                    <Form.Control
+                      style={{ position:"relative", top: -25, left:55,width:50}}
+                      size="sm"
+                      type="number"
+                      value={appcontext.topknumber}
+                      onChange={handleChangetopknumber}
+                    /> 
               </div>
+              <div>
+              
+              {appcontext.makecloud ? (<WordCloud
+                    data={appcontext.poswords}
+                    width={200}
+                    height={200}
+                    //font="Times"
+                    //fontStyle="italic"
+                    //fontWeight="bold"
+                    //fontSize={(word) => Math.log2(word.value) * 5}
+                    spiral="rectangular"
+                    rotate={0}
+                    padding={0}    
+                    random={position}
+                    fill={(d, i) => 'black'}
+                    onWordClick={(event, d) => {
+                      //console.log(`onWordClick: ${d.text}`);
+                    }}
+                    onWordMouseOver={(event, d) => {
+                      //handleSearch(d.text)
+                      console.log(`onWordMouseOver: ${d.text}`);
+                    }}
+                    onWordMouseOut={(event, d) => {
+                      //appcontext.setSearched([])
+                      console.log(`onWordMouseOut: ${d.text}`);
+                    }}
+                  />):null
+                  }
 
-              <Divider />
-              <br/>
-                  <div  className='cluster-slider' style={{display:"none"}}>
-        
-                    <Slider
-                      size="small"
-                      aria-label="autoclusters"
-                      value={appcontext.clusterk}
-                      onChange={handleClusterKchange}
-                      min={0}
-                      max={100}
-                    />
-                  </div>
 
-              <Divider />
-              <br/>
+                    
+                    </div>
+
+                    <br/>
+                        <div  className='cluster-slider' style={{display:"none"}}>
+              
+                          <Slider
+                            size="small"
+                            aria-label="autoclusters"
+                            value={appcontext.clusterk}
+                            onChange={handleClusterKchange}
+                            min={0}
+                            max={100}
+                          />
+                        </div>
+
+                    <br/>
 
 
-      <div id="explore-selection" style={{display:"block", height:"300"}}>
-      
-        <div id="unique-items-div">
-          <p className="title">
-          {appcontext.lastselected.length > 0
-              ? appcontext.lastselected.length + " total unique"
-              : 0}{" "}
-            items
-          </p>
-        </div>
-        <div className="tableDiv">
-          <Table bordered>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Item</th>
-              </tr>
-            </thead>
-            <tbody>{SelectedItems}</tbody>
-          </Table>
-        </div>
+            <div id="explore-selection" style={{display:"none", height:"300"}}>
+            
+              <div id="unique-items-div">
+                <p className="title">
+                {appcontext.lastselected.length > 0
+                    ? appcontext.lastselected.length + " total unique"
+                    : 0}{" "}
+                  items
+                </p>
               </div>
+              <div className="tableDiv">
+                <Table bordered>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Item</th>
+                    </tr>
+                  </thead>
+                  <tbody>{SelectedItems}</tbody>
+                </Table>
+              </div>
+                    </div>
 
-
+      </div>
+    </div>
+  </div>
+</div>
 
 
         </div>
 
-    
+        </>
       ); 
 }
 

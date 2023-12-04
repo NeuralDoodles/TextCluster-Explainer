@@ -39,15 +39,7 @@ export default function LeftDrawer() {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <IconButton
-            style={{display:"block"}}
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{mt:2, ml: 0,  mr: 0, ...(open ) }}
-          >
-            
-            <p style={{fontSize: 16}}>Upload</p>
-          </IconButton>
+
       <Drawer
         sx={{
           width: 0,
@@ -77,6 +69,16 @@ export default function LeftDrawer() {
         <Divider />
         
       </Drawer>
+
+      <IconButton
+            style={{display:"block",position:"absolute", top: '94%', left: '5px'}}
+            onClick={handleDrawerOpen}
+            edge="start"
+            sx={{mt:2, ml: 0,  mr: 0, ...(open ) }}
+          >
+            
+            <p style={{fontSize: 16}}>[Click here to upload your data]</p>
+          </IconButton>
     </Box>
   );
 }

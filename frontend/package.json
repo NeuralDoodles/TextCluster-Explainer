@@ -24,6 +24,7 @@
     "d3-lasso": "^0.0.5",
     "d3-quadtree": "^3.0.1",
     "gh-pages": "^2.0.1",
+    "openai": "^4.13.0",
     "plotly.js": "^2.22.0",
     "pub-sub-es": "^2.0.1",
     "react": "^18.2.0",

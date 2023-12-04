@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { AppContext } from '../AppContext';
 import { quadtree } from 'd3-quadtree' // v^2.0.0
 import Slider from "@mui/material/Slider";
+import CircularProgress from '@mui/material/CircularProgress';
 
 
 
@@ -12,7 +13,7 @@ import Slider from "@mui/material/Slider";
 //2: label
 
 
-function drawPoint([cx,cy], r, ctx, color, alpha = 0.8, lineWidth = 0.0) {
+function drawPoint([cx,cy], r, ctx, color, alpha = 0.9, lineWidth = 0.0) {
 
 
   // NOTE; each point needs to be drawn as its own path
@@ -20,7 +21,7 @@ function drawPoint([cx,cy], r, ctx, color, alpha = 0.8, lineWidth = 0.0) {
   // speed up if the path is closed after all the points have been drawn
   // and don't mind points not having a stroke
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  ctx.arc(cx, cy, r/1.5, 0, 2 * Math.PI);
   //context.closePath();
   ctx.lineWidth = lineWidth;
   ctx.strokeStyle = "black";
@@ -39,8 +40,8 @@ function makeCanvas(id, class_name, w, h){
   canvas.style.position = 'absolute';
   canvas.style.overflow = "visible"
   
-  canvas.style.x = 10;
-  canvas.style.y = 10;
+  canvas.style.top = '20px'; 
+  canvas.style.left = '280px';
   const context = canvas.getContext("2d");
 
 
@@ -224,10 +225,11 @@ function LassoSelectionCanvas(data) {
                   if (canvas.value['polygon'].length>1){
                     appcontext.setLassoed(canvas.value['selected']);
                     appcontext.setGetexplain(true); 
-                    appcontext.setIsinsidelasso(isinsidelasso)};
                     appcontext.setMakecloud(true)
+                    appcontext.setIsinsidelasso(isinsidelasso)};
                     appcontext.prevselected.push(canvas.value['selected'])
                     appcontext.setLastselected(canvas.value['selected'])
+                    
                   
                   
 
@@ -286,7 +288,7 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
   d3.select("#tooltip").on("mousemove", function(event){
       
       //find in the vicinity of 10 pixel around the click.
-      const newHoverPoint = quadtreeInstance.find(event.pageX,  event.pageY-navbarheight+20, 10)
+      const newHoverPoint = quadtreeInstance.find(event.pageX-280,  event.pageY -20, 10)
 
       
 
@@ -314,7 +316,7 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
           ctx.beginPath();
           ctx.lineWidth = "2";
           ctx.strokeStyle = "black";
-          ctx.rect(event.pageX+10,  event.pageY-120, w+10, 30);
+          ctx.rect(event.pageX+10-280,  event.pageY-20-20, w+10, 30);
           ctx.fillStyle = 'white';
           ctx.fill();
           ctx.stroke();
@@ -331,7 +333,7 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
           
 
           ctx.fillStyle = 'black';
-          ctx.fillText(txt, event.pageX +12,  event.pageY-100, w+20);
+          ctx.fillText(txt, event.pageX +12-280,  event.pageY-20, w+20);
       }catch(e){
           
        }
@@ -486,9 +488,8 @@ let transformed_data = data.map(point=> transformedPoint(point, transf_matrix))
       //drawPoint([point[0],point[1]], 3, context,appcontext.clustercolors[index]);
     })})
 
-    console.log(data)
     appcontext.searched.forEach(function(index) {
-      drawPoint([data[index][0],data[index][1]], 10, context, '#c2677a', 0.9, 2);
+      drawPoint([data[index][0],data[index][1]], 10, context, '#c2677a', 0.7, 2);
 
     })
     context.closePath()
@@ -595,6 +596,7 @@ if (appcontext.zoomselected){
 
 return (
     <>
+    
     </>
   ); 
 }

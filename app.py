@@ -296,16 +296,16 @@ def GPTexplanation():
     parser.add_argument('apiKey', type=str)
     args = parser.parse_args()
     selectedtext = args['selectedtext']
-    openai.api_key = "" #args['apiKey']
+    openai.api_key = "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" #args['apiKey']
     
 
     #text = " ".join(selectedtext).split()[:3900]
     text = " ".join(selectedtext).split()[:7900]
     #"Please respond with a Keyord or Phrase that best captures the common theme between the following sentences. Make sure your response is only a word or a phrase:"
     completion = openai.ChatCompletion.create(
-        #model="gpt-3.5-turbo", 
+        #model="gpt-3.5-turbo-0301",#"gpt-3.5-turbo-0613",#"gpt-3.5-turbo-0301", 
         model="gpt-4", 
-        messages=[{"role": "user", "content": "Do not complete the sentences. Answer the following question: " +" ".join(text) }]
+        messages=[{"role": "user", "content": "Do not complete the sentences. Answer the following question in 20 words or less: " +" ".join(text) }]
         )
     reply_content = completion.choices[0].message.content
 

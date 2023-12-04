@@ -5,10 +5,11 @@ import React, { useContext, useState, useEffect} from 'react';
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import styled, { keyframes } from "styled-components";
-import Slider from "@mui/material/Slider";
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+
+import CircularProgress from '@mui/material/CircularProgress';
+const { Configuration, OpenAIApi } = require("openai");
+
+
 
 
 function addlabel(label, center){
@@ -19,13 +20,14 @@ function addlabel(label, center){
   let w = ctx.measureText(label).width;
   //ctx.fillText(label, center[0]-w/2,center[1]-10);
 
-  ctx.font="15px verdana";
-  ctx.shadowColor="black";
-  ctx.shadowBlur=10;
-  ctx.lineWidth=2;
+  ctx.font="18px helvetica";
+  //ctx.shadowColor="white";
+  //ctx.shadowBlur=5;
+  ctx.lineWidth=4;
+  ctx.strokeStyle="white";
   ctx.strokeText(label, center[0]-w/2,center[1]-10);
-  ctx.shadowBlur=0;
-  ctx.fillStyle="white";
+  //ctx.shadowBlur=2;
+  ctx.fillStyle="black";
   ctx.fillText(label, center[0]-w/2,center[1]-10);
   }
 
@@ -142,7 +144,7 @@ const toggleExpDiv = (e, id, txt) => {
     
     const [selectedItems, setSelectedItems] = useState([]);
 
-function drawTestProjection(point,size){
+    function drawTestProjection(point,size){
 
         
 
@@ -166,6 +168,8 @@ function drawTestProjection(point,size){
 
   const handleChangeText = (e) => {
     appcontext.setTesttext(e.target.value)
+    console.log(appcontext.makecloud)
+    
 };
 const handleTextClick = (e) => {
     axios
@@ -185,16 +189,6 @@ const handleTextClick = (e) => {
 
 
 
-    const handleClickMenu = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-    
-    
-    const handleClose = (e,id, txt) => {
-        if (id !=""){toggleExpDiv(e, id, txt)}
-        setAnchorEl(null);
-    }
-    
     
     
   
@@ -354,7 +348,7 @@ const handleTextClick = (e) => {
         .catch((error) => {
           console.log(error);
         });*/
-        
+        appcontext.setLoading(true)
         axios
         .post(localDevURL + "GPT-explanation", {
           apiKey: appcontext.apikey,
@@ -365,12 +359,18 @@ const handleTextClick = (e) => {
           appcontext.setLangexplanation(response.data);
           var centroid = getCentroid(appcontext.lassoed)
           addlabel(response.statusText, centroid)
+          appcontext.setLoading(false)
+
           
 
         })
         .catch((error) => {
+          appcontext.setLangexplanation("Something is going wrong, Please try again.");
+          appcontext.setLoading(false);
           console.log(error);
         });
+
+      
 
     }
 
@@ -379,119 +379,116 @@ const handleTextClick = (e) => {
 
 
     return (
-        
+        <>
+        {(appcontext.loading)?<CircularProgress size="2rem"  color="inherit"style={{position:'absolute',top:'30px', left:'700px'}}/>:null}
         <div id ="explain-div" className="explain-panel">
 
+            <div class="accordion-item" >
+              <h2 class="accordion-header" id="heading1">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                <h3>Explain</h3> &nbsp; {(appcontext.loading)?<CircularProgress size="2rem"  color="inherit"style={{position:'relative',top:'-0.25em'}}/>:null}
+                </button>
+                      <Form.Control
+                      className="form-control"
+                      id="explanation"
+                      size="sm"
+                      as="textarea"
+                      rows={5}
+                      value={appcontext.langexplanation}
+                      //onChange={handleChangeExplanation}
+                    ></Form.Control>
+              </h2>
+              
+              <div id="collapse1" class="accordion-collapse collapse" aria-labelledby="heading1" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                <div id="explain-test" >
+                <br/>
+                <h5>Prompt</h5>
+                  <Form.Group>
+                    <Form.Control
+                      className="form-control"
+                      id="promptTextArea"
+                      size="sm"
+                      as="textarea"
+                      rows={3}
+                      value={appcontext.prompt}
+                      onChange={handleChangePrompt}
+                    ></Form.Control>
+<br/>
 
-        <Button
-        variant="light"
-        id="menu-buttion-1"
-        aria-controls={open ? 'demo-positioned-menu' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
-        onClick={handleClickMenu}
-      >
-      <h5 id="explanation-type"> Test New Input</h5>
-      </Button>
-      <Menu
-        id="menu-1"
-        aria-labelledby="demo-positioned-button"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-      >
-        <MenuItem onClick={(e) => { handleClose(e,  "cloud-div", "Explanation as Keywords");}}>Explanation as Keywords </MenuItem>
-        <MenuItem onClick={(e) => { handleClose(e, "explain-test", "Test New Input");}}> Test New Input </MenuItem>
+                    
 
-      </Menu>
+                    <div className="button-box" >
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        type="submit"
+                        onClick={handleNewPrompt}
+                      >
+                        Set Prompt
+                      </Button>
+                      <Button
+                        style={{position:"relative", left:130}}
+                        size="sm"
+                        variant="outline-secondary"   
+                        className="resetButton"
+                        onClick={handleReset}
+                      >
+                        Reset
+                      </Button>
+                    </div>
+                  </Form.Group>
 
+                </div>
 
-      <div id="explain-test" style={{display:'block'}}>
+                <br/>
+                <div id="apikey" >
+                <Form.Control
+                      className="form-control"
+                      size="sm"
+                      value={appcontext.apikey === "" ? "OpenAI API Key: *******" : appcontext.apikey}
+                      onChange={handleChangeKey}
+                    ></Form.Control>
+                  </div>
 
+                </div>
+              </div>
+            </div>
 
-      <Form.Control
-            className="form-control"
-            id="TestProjectionArea"
-            size="sm"
-            as="textarea"
-            placeholder={"Enter Text Here to creat new projection point"}
-            onChange={handleChangeText}
-          ></Form.Control>
-          <p></p>
-      <Button
-            size="sm"
-            variant="secondary"
-            type="submit"
-            onClick={handleTextClick}>
-            Show
-          </Button>
-        <hr />
-        <Form.Group>
-        <h5 id="explanation-type"> Natural Language Explanation</h5>
-          <Form.Control
-            className="form-control"
-            id="promptTextArea"
-            size="sm"
-            as="textarea"
-            rows={3}
-            value={appcontext.prompt}
-            onChange={handleChangePrompt}
-          ></Form.Control>
+            </div>
+            <div id ="test-div" className="test-panel" style={{display:'block'}}>
 
-          <div className="button-box" style={{position:"relative",top:10}}>
-            <Button
-              size="sm"
-              variant="secondary"
-              type="submit"
-              onClick={handleNewPrompt}
-            >
-              Set Prompt
-            </Button>
-            <Button
-              style={{position:"relative", left:130}}
-              size="sm"
-              variant="outline-secondary"   
-              className="resetButton"
-              onClick={handleReset}
-            >
-              Reset
-            </Button>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading2">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse01" aria-expanded="false" aria-controls="collapse2">
+                <h3>Test</h3>
+                </button>
+              </h2>
+              <div id="collapse01" class="accordion-collapse collapse show" aria-labelledby="heading2" data-bs-parent="#accordionExample1">
+                <div class="accordion-body">
+                <Form.Control
+                      className="form-control"
+                      id="TestProjectionArea"
+                      size="sm"
+                      as="textarea"
+                      placeholder={"Enter Text Here to creat new projection point"}
+                      onChange={handleChangeText}
+                    ></Form.Control>
+                    <p></p>
+                <Button
+                      size="sm"
+                      variant="secondary"
+                      type="submit"
+                      onClick={handleTextClick}>
+                      Re-project
+                    </Button>      </div>
+              </div>
+
           </div>
-        </Form.Group>
-        <Form.Control
-            style={{position:"relative",top:20}}
-            className="form-control"
-            id="explanation"
-            size="sm"
-            as="textarea"
-            rows={8}
-            value={appcontext.langexplanation}
-            //onChange={handleChangeExplanation}
-          ></Form.Control>
-      </div>
-
-        
-      <div id="apikey" style={{position:'relative', left:0,}}>
-      <Form.Control
-            className="form-control"
-            size="sm"
-            value={appcontext.apikey === "" ? "OpenAI API Key: *******" : appcontext.apikey}
-            onChange={handleChangeKey}
-          ></Form.Control>
         </div>
 
-
         
-        </div>
-
+        </>
     
       ); 
 }

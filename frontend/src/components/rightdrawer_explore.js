@@ -45,16 +45,6 @@ export default function RightDrawer() {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <IconButton
-            style={{display:"block"}}
-            id="explorenavbutton"
-            onClick={handleDrawerOpen}
-            edge="end"
-            sx={{mt:2, ml: 0,  mr: 0, ...(open ) }}
-          >
-            
-            <p style={{fontSize: 16}}>Explore Selection</p>
-          </IconButton>
       <Drawer
         sx={{
           width: 5,

@@ -181,9 +181,10 @@ function getCentroid(points) {
     const [lassocentroid, setLassocentroid] = useState([])
     const [isinsidelasso, setIsinsidelasso] = useState([])
     const [getexplain, setGetexplain] = useState(false)
+    const [loading, setLoading] = useState(false)
  
     const DEFAULT_PROMPT =
-    "What is the common theme between the selected sentences?";
+    "Give a very concise commonality between these texts: ";
     
     const [apikey, setApikey] = useState("");
     const [topknumber, setTopknumber] = useState(30);
@@ -245,6 +246,7 @@ function getCentroid(points) {
         langexplanation, setLangexplanation,
         isinsidelasso, setIsinsidelasso,
         getexplain, setGetexplain,
+        loading, setLoading,
         testtext, setTesttext,
 
       };
